@@ -1,0 +1,26 @@
+# 中医先天禀赋推演系统 - Python依赖
+# 安装命令：pip install -r requirements.txt
+
+# ===== Web框架 =====
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-dotenv>=1.0.0
+
+# ===== LangChain =====
+langchain>=0.3.0
+langchain-openai>=0.2.0
+langchain-community>=0.3.0
+
+# ===== 向量库（RAG用） =====
+langchain-chroma>=0.1.0
+chromadb>=0.4.0
+
+# ===== 文档处理（RAG用） =====
+langchain-text-splitters>=0.3.0
+sentence-transformers>=2.2.0
+
+# ===== LangGraph（智能体编排用） =====
+langgraph>=0.2.0
+
+# ===== 其他工具 =====
+pydantic>=2.0.0

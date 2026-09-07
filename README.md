@@ -31,7 +31,7 @@
 
 ## 快速开始
 
-### 方式一：直接打开HTML（推荐）
+### 方式一：直接打开HTML（纯前端演示）
 
 1. 克隆或下载本仓库
 2. 双击打开 `中医先天禀赋推演系统.html`
@@ -39,7 +39,34 @@
 4. 点击"下一步"，系统自动预填体质问卷
 5. 点击"开始推演"查看完整报告
 
-### 方式二：在线预览
+### 方式二：启动后端服务（大模型增强版）
+
+后端提供大模型API接入、RAG知识库检索、LangGraph智能体编排能力。
+
+```bash
+# 1. 进入后端目录
+cd 后端
+
+# 2. 安装依赖
+pip install -r requirements.txt
+
+# 3. 配置API Key
+复制 .env.example 为 .env，填入你的 DeepSeek API Key
+# 获取地址：https://platform.deepseek.com/
+
+# 4. 启动服务
+uvicorn main:app --reload --port 8000
+
+# 5. 打开API文档
+浏览器访问 http://localhost:8000/docs
+```
+
+**API Key管理说明**：
+- 开发时：在 `后端/.env` 中配置你的Key，后端自动读取
+- 演示时：用户在前端输入自己的Key，通过请求头 `X-API-Key` 传给后端，每个人用自己的Key，不产生额外费用
+- `.env` 文件不会被提交到GitHub（已在.gitignore中配置）
+
+### 方式三：在线预览
 
 访问在线演示版本（需联网加载ECharts和图片资源）。
 
@@ -47,7 +74,7 @@
 
 ```
 tcm-constitution-agent/
-├── 中医先天禀赋推演系统.html    # 主程序（单文件，含所有逻辑和UI）
+├── 中医先天禀赋推演系统.html    # 前端主程序（单文件，含所有逻辑和UI）
 ├── README.md                    # 项目说明
 ├── .gitignore                   # Git忽略配置
 ├── 01_知识库/                   # 中医养生知识库（Markdown）
@@ -60,7 +87,20 @@ tcm-constitution-agent/
 │   ├── 穴位图片/                # 25张穴位图
 │   ├── 少食食物图片/            # 12张少食食物
 │   └── 脏器图片/                # 5张五脏器官图
-└── 04_源代码/                   # 相关源代码和脚本
+├── 04_源代码/                   # 相关源代码和脚本
+└── 后端/                        # Python后端（大模型增强）
+    ├── main.py                  # FastAPI入口 + API Key管理
+    ├── requirements.txt         # Python依赖
+    ├── .env.example             # 环境变量示例（复制为.env填入你的Key）
+    ├── .env                     # 你的API Key（不提交GitHub）
+    ├── rag/                     # RAG模块（知识库检索增强）
+    │   ├── build_knowledge_base.py  # 知识库向量化脚本
+    │   └── retriever.py             # 检索逻辑
+    └── agent/                   # Agent模块（LangGraph智能体）
+        ├── state.py             # 状态定义
+        ├── nodes.py             # 节点函数
+        ├── tools.py             # 工具封装
+        └── graph.py             # 图编排
 ```
 
 ## 核心算法
@@ -90,10 +130,37 @@ tcm-constitution-agent/
 
 ## 技术栈
 
-- **前端**：原生 HTML + CSS + JavaScript（单文件，无构建依赖）
-- **可视化**：ECharts 5.6（雷达图）
+### 前端
+- **原生 HTML + CSS + JavaScript**（单文件，无构建依赖）
+- **ECharts 5.6**（雷达图可视化）
+
+### 后端
+- **FastAPI**：Web框架，提供RESTful API
+- **LangChain**：大模型应用开发框架
+- **LangGraph**：智能体状态机编排
+- **Chroma**：向量数据库（RAG知识库检索）
+- **DeepSeek API**：大模型推理
+
+### 知识库与算法
 - **知识库**：Markdown格式，14部中医经典原文
 - **算法**：五运六气推算、体质评分、症状权重打分、组合病机匹配
+
+## 后端API
+
+| 接口 | 方法 | 说明 |
+|---|---|---|
+| `/api/health` | GET | 健康检查，返回服务状态和Key配置情况 |
+| `/api/chat` | POST | 对话接口，请求头 `X-API-Key` 传入用户的DeepSeek Key |
+| `/docs` | GET | Swagger API文档 |
+
+## 开发路线图
+
+- [x] 纯前端规则引擎版本（五运六气+体质问卷+症状推演）
+- [x] 后端框架搭建（FastAPI + API Key管理）
+- [ ] **RAG增强**：知识库向量化 + 语义检索 + 基于知识库的问答
+- [ ] **LangGraph智能体**：多步骤流程编排 + 工具调用 + 多轮对话
+- [ ] **前后端整合**：前端HTML调用后端API，支持大模型增强的推演报告
+- [ ] **用户反馈闭环**：用户对调理方案打分，智能体根据反馈调整
 
 ## 参考文献
 
