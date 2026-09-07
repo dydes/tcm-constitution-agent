@@ -1,0 +1,1987 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中医先天禀赋推演系统</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --background:hsl(40 35% 96%);
+  --card:hsl(42 40% 98%);
+  --foreground:hsl(24 15% 18%);
+  --muted-foreground:hsl(25 10% 45%);
+  --primary:hsl(5 75% 45%);
+  --primary-foreground:hsl(40 30% 98%);
+  --accent:hsl(30 35% 92%);
+  --accent-foreground:hsl(20 20% 30%);
+  --border:hsl(30 20% 85%);
+  --destructive:hsl(0 84% 60%);
+  --success:hsl(130 54% 42%);
+  --warning:hsl(26 90% 49%);
+}
+body{font-family:"Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;background:linear-gradient(135deg,hsl(40 35% 96%) 0%,hsl(42 40% 98%) 50%,hsl(30 35% 94%) 100%);color:var(--foreground);line-height:1.7;min-height:100vh}
+.topbar{position:sticky;top:0;z-index:100;background:hsl(40 35% 96%/85%);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);height:56px;display:flex;align-items:center;padding:0 24px}
+.topbar .logo{display:flex;align-items:center;gap:10px}
+.topbar .logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--primary),#8b2500);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:bold}
+.topbar h1{font-size:16px;font-weight:700;color:var(--foreground);letter-spacing:1px}
+.topbar .subtitle{font-size:11px;color:var(--muted-foreground);margin-left:12px}
+.topbar .right{margin-left:auto;font-size:11px;color:var(--muted-foreground)}
+.nav{position:sticky;top:56px;z-index:99;background:hsl(42 40% 98%/85%);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:0 24px;display:none;gap:4px;overflow-x:auto}
+.nav.show{display:flex}
+.nav-item{padding:10px 16px;font-size:13px;color:var(--muted-foreground);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s;display:flex;align-items:center;gap:6px}
+.nav-item:hover{color:var(--primary);background:var(--accent)}
+.nav-item.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+.nav-item .num{width:20px;height:20px;background:var(--primary);color:#fff;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px}
+.container{max-width:1152px;margin:0 auto;padding:24px 20px 60px}
+.input-card{max-width:560px;margin:40px auto;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:32px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.input-card .icon{text-align:center;font-size:40px;margin-bottom:12px}
+.input-card h2{text-align:center;font-size:20px;font-weight:700;margin-bottom:6px;color:var(--foreground)}
+.input-card .desc{text-align:center;font-size:13px;color:var(--muted-foreground);margin-bottom:24px}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--muted-foreground);margin-bottom:5px}
+.form-group input,.form-group select{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit;background:#fff;color:var(--foreground);transition:border-color .2s}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px hsl(5 75% 45%/10%)}
+.form-row{display:flex;gap:10px}
+.form-row .form-group{flex:1}
+.btn{width:100%;padding:12px;background:linear-gradient(135deg,var(--primary),#8b2500);color:#fff;border:none;border-radius:8px;font-size:15px;font-family:inherit;cursor:pointer;letter-spacing:4px;transition:all .2s;margin-top:8px;font-weight:600}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px hsl(5 75% 45%/30%)}
+.btn-secondary{background:var(--accent);color:var(--accent-foreground);border:1px solid var(--border);font-size:13px;padding:8px;letter-spacing:2px;margin-bottom:12px}
+.btn-secondary:hover{background:hsl(30 35% 88%)}
+.module{background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.04);overflow:hidden;scroll-margin-top:120px}
+.module-header{padding:16px 20px;display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none}
+.module-header:hover{background:hsl(40 35% 96%/50%)}
+.module-num{width:32px;height:32px;background:hsl(5 75% 45%/10%);color:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0}
+.module-title{flex:1}
+.module-title h3{font-size:15px;font-weight:700;color:var(--foreground)}
+.module-title p{font-size:11px;color:var(--muted-foreground);margin-top:2px}
+.module-chevron{color:var(--muted-foreground);transition:transform .3s;font-size:14px}
+.module.open .module-chevron{transform:rotate(90deg)}
+.module-body{display:none;padding:20px;border-top:1px solid hsl(30 20% 85%/40%)}
+.module.open .module-body{display:block}
+.grid-12{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.col-4{grid-column:span 4}.col-5{grid-column:span 5}.col-3{grid-column:span 3}.col-9{grid-column:span 9}.col-6{grid-column:span 6}.col-12{grid-column:span 12}
+.person-card{background:hsl(30 20% 85%/20%);border-radius:10px;padding:16px;display:flex;gap:14px;align-items:center}
+.person-avatar{width:80px;height:96px;flex-shrink:0}
+.person-info{flex:1;font-size:12px;color:var(--muted-foreground)}
+.person-info .age-gender{font-size:15px;font-weight:700;color:var(--foreground);margin-bottom:6px}
+.person-info div{margin-bottom:3px;display:flex;align-items:center;gap:5px}
+.summary-card{background:hsl(5 75% 45%/5%);border-radius:10px;padding:16px}
+.summary-card .title{font-size:11px;font-weight:600;color:var(--primary);margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.summary-card .content{font-size:13px;line-height:1.8;color:var(--foreground)}
+.summary-card .badges{margin-top:10px;padding-top:10px;border-top:1px solid hsl(5 75% 45%/10%);display:flex;flex-wrap:wrap;gap:6px}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500}
+.badge-destructive{background:hsl(0 84% 60%/10%);color:var(--destructive);border:1px solid hsl(0 84% 60%/20%)}
+.badge-secondary{background:hsl(30 20% 85%/40%);color:var(--muted-foreground)}
+.badge-primary{background:hsl(5 75% 45%/10%);color:var(--primary);border:1px solid hsl(5 75% 45%/20%)}
+.badge-amber{background:hsl(38 92% 50%/10%);color:#b45309;border:1px solid hsl(38 92% 50%/20%)}
+.badge-blue{background:hsl(221 83% 53%/10%);color:#1d4ed8;border:1px solid hsl(221 83% 53%/20%)}
+.badge-purple{background:hsl(262 83% 58%/10%);color:#6d28d9;border:1px solid hsl(262 83% 58%/20%)}
+.top3-card{border:1px solid hsl(38 92% 50%/30%);background:hsl(38 92% 50%/5%);border-radius:10px;padding:14px}
+.top3-card .title{font-size:11px;font-weight:600;color:#b45309;margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.top3-item{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12px}
+.top3-rank{width:20px;height:20px;background:#f59e0b;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.top3-name{font-weight:600;color:#92400e;flex:1}
+.energy-section{margin-top:16px}
+.energy-section .title{font-size:12px;font-weight:600;color:var(--muted-foreground);margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.energy-row{margin-bottom:10px}
+.energy-row .label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px}
+.energy-row .label .zang{font-weight:700}
+.energy-row .label .val{font-weight:600}
+.energy-bar{height:10px;background:hsl(30 20% 85%/40%);border-radius:5px;position:relative;overflow:hidden}
+.energy-bar::after{content:'';position:absolute;left:50%;top:0;bottom:0;width:1px;background:hsl(30 20% 70%)}
+.energy-fill{height:100%;border-radius:5px;transition:width .5s;position:absolute;top:0}
+.energy-level-text{text-align:center;font-size:10px;color:var(--muted-foreground);margin-top:2px}
+.constitution-box{background:hsl(30 20% 85%/20%);border-radius:10px;padding:14px}
+.constitution-box .title{font-size:11px;color:var(--muted-foreground);margin-bottom:8px}
+.constitution-box .badge{margin-bottom:6px}
+.constitution-box .criteria{font-size:11px;color:var(--muted-foreground);line-height:1.6;margin-top:8px}
+.radar-container{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin-bottom:16px}
+.radar-box{border-radius:10px;padding:12px;text-align:center}
+.radar-box.purple{border:1px solid hsl(262 83% 58%/20%);background:hsl(262 83% 58%/3%)}
+.radar-box.orange{border:1px solid hsl(26 90% 49%/20%);background:hsl(26 90% 49%/3%)}
+.radar-box .rtitle{font-size:12px;font-weight:600;margin-bottom:6px}
+.radar-box.purple .rtitle{color:#6d28d9}
+.radar-box.orange .rtitle{color:#c2410c}
+.radar-chart{width:100%;height:240px}
+.radar-arrow{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted-foreground)}
+.radar-arrow .arrow{font-size:24px}
+.radar-arrow .text{font-size:10px;text-align:center}
+.matrix-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px}
+.matrix-table th,.matrix-table td{border:1px solid var(--border);padding:7px 8px;text-align:center}
+.matrix-table th{background:hsl(30 20% 85%/20%);font-weight:600;color:var(--muted-foreground);font-size:11px}
+.matrix-table td.zang{font-weight:700;background:hsl(30 20% 85%/10%)}
+.matrix-table .pos{background:hsl(130 54% 42%/10%);color:var(--success);font-weight:600}
+.matrix-table .neg{background:hsl(0 84% 60%/10%);color:var(--destructive);font-weight:600}
+.matrix-table .zero{color:var(--muted-foreground)}
+.matrix-table .total{background:hsl(5 75% 45%/5%);font-weight:700}
+.details-box{border:1px solid hsl(30 20% 85%/50%);background:hsl(30 20% 85%/15%);border-radius:8px;margin-bottom:10px;overflow:hidden}
+.details-box summary{padding:10px 14px;cursor:pointer;font-size:13px;font-weight:600;color:var(--foreground);display:flex;align-items:center;gap:8px;list-style:none}
+.details-box summary::-webkit-details-marker{display:none}
+.details-box summary::before{content:'▶';font-size:10px;color:var(--primary);transition:transform .2s}
+.details-box[open] summary::before{transform:rotate(90deg)}
+.details-box .content{padding:0 14px 14px}
+.step-item{background:#fff;border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-bottom:8px}
+.step-item .step-title{font-size:12px;font-weight:700;color:var(--primary);margin-bottom:4px}
+.step-item .step-content{font-size:12px;color:var(--foreground);line-height:1.7}
+.sub-section{margin-bottom:20px}
+.sub-section-title{font-size:14px;font-weight:700;color:var(--foreground);margin-bottom:10px;display:flex;align-items:center;gap:8px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.sub-section-title .tag{font-size:10px;font-weight:500;color:var(--muted-foreground);background:var(--accent);padding:2px 8px;border-radius:10px;margin-left:auto}
+.constitution-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px}
+.constitution-card .title{font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.top5-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+.top5-item{background:hsl(0 84% 60%/3%);border:1px solid hsl(0 84% 60%/15%);border-radius:10px;padding:12px 8px;text-align:center;position:relative}
+.top5-item .rank{position:absolute;top:8px;left:8px;width:20px;height:20px;background:var(--destructive);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.top5-item .name{font-size:13px;font-weight:700;color:var(--foreground);margin:18px 0 6px}
+.top5-item .score{font-size:10px;color:var(--muted-foreground)}
+.top5-item .zang-badges{display:flex;justify-content:center;gap:3px;margin-top:6px;flex-wrap:wrap}
+.tip-box{background:hsl(30 20% 85%/20%);border-radius:8px;padding:10px 14px;text-align:center;font-size:11px;color:var(--muted-foreground);margin-bottom:14px}
+.timeline-container{overflow-x:auto;padding-bottom:10px}
+.timeline{display:flex;align-items:flex-start;min-width:600px;position:relative;padding-top:20px}
+.timeline::before{content:'';position:absolute;top:28px;left:30px;right:30px;height:2px;background:var(--border)}
+.timeline-node{flex:1;text-align:center;position:relative;z-index:1}
+.timeline-dot{width:16px;height:16px;border-radius:50%;margin:0 auto 8px;border:2px solid var(--border);background:#fff;position:relative;z-index:2}
+.timeline-node.past .timeline-dot{background:hsl(5 75% 45%/30%);border-color:hsl(5 75% 45%/40%)}
+.timeline-node.current .timeline-dot{background:var(--primary);border-color:var(--primary);box-shadow:0 0 0 4px hsl(5 75% 45%/15%)}
+.timeline-node .stage{font-size:11px;font-weight:600;color:var(--foreground)}
+.timeline-node .desc{font-size:10px;color:var(--muted-foreground);margin-top:2px}
+.timeline-info{background:hsl(5 75% 45%/5%);border-radius:8px;padding:12px 16px;margin-top:12px;font-size:12px}
+.timeline-info div{margin-bottom:4px}
+.timeline-info strong{color:var(--primary)}
+.combo-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+.combo-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px}
+.combo-card .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.combo-card .name{font-size:13px;font-weight:700;color:var(--foreground);display:flex;align-items:center;gap:6px}
+.combo-card .desc{font-size:11px;color:var(--muted-foreground);line-height:1.6;margin-bottom:8px}
+.combo-card .symptoms{display:flex;flex-wrap:wrap;gap:4px}
+.symptom-group{margin-bottom:14px}
+.symptom-group-title{font-size:12px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:6px}
+.symptom-group-title.red{background:hsl(0 84% 60%/5%);color:#991b1b}
+.symptom-group-title.amber{background:hsl(38 92% 50%/5%);color:#92400e}
+.symptom-group-title.blue{background:hsl(221 83% 53%/5%);color:#1e40af}
+.symptom-group-title.purple{background:hsl(262 83% 58%/5%);color:#5b21b6}
+.symptom-2col{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.symptom-row{display:flex;align-items:center;justify-content:space-between;padding:5px 10px;background:hsl(30 20% 85%/10%);border-radius:5px;font-size:12px}
+.symptom-row .name{font-weight:500}
+.symptom-row .badges{display:flex;gap:4px}
+.food-group{margin-bottom:14px;background:hsl(30 20% 85%/10%);border-radius:10px;padding:14px}
+.food-group-title{font-size:13px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.food-group-title img{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--border)}
+.food-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.food-card{text-align:center}
+.food-card img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid var(--border)}
+.food-card .fname{font-size:11px;font-weight:600;margin-top:5px}
+.food-card .ftag{font-size:9px;color:var(--primary);background:hsl(5 75% 45%/8%);padding:1px 4px;border-radius:3px;margin-top:2px;display:inline-block}
+.avoid-group{margin-top:14px;background:hsl(0 60% 50%/5%);border-radius:10px;padding:14px;border:1px solid hsl(0 60% 50%/15%)}
+.avoid-title{font-size:13px;font-weight:700;margin-bottom:10px;color:#b91c1c;display:flex;align-items:center;gap:8px}
+.avoid-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.avoid-card{text-align:center;background:#fff;border-radius:8px;padding:8px;border:1px solid hsl(0 60% 50%/15%)}
+.avoid-card img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;opacity:.85;filter:grayscale(20%)}
+.avoid-card .avoid-name{font-size:11px;font-weight:700;margin-top:5px;color:#b91c1c}
+.avoid-card .avoid-reason{font-size:9px;color:#6b7280;margin-top:3px;line-height:1.4}
+.avoid-card .avoid-zang{margin-top:4px}
+@media(max-width:768px){.avoid-grid{grid-template-columns:repeat(2,1fr)}}
+.exercise-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+.exercise-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:all .2s}
+.exercise-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.exercise-img{height:140px;background:linear-gradient(135deg,hsl(38 92% 50%/5%),hsl(26 90% 49%/5%));display:flex;align-items:center;justify-content:center;position:relative}
+.exercise-img img{height:120px;object-fit:contain}
+.exercise-type{position:absolute;top:10px;right:10px;font-size:10px;padding:2px 8px;border-radius:10px;background:#fff;border:1px solid hsl(26 90% 49%/30%);color:#c2410c}
+.exercise-body{padding:14px}
+.exercise-body .ename{font-size:14px;font-weight:700;margin-bottom:4px}
+.exercise-body .eeffect{font-size:12px;color:var(--muted-foreground);margin-bottom:6px}
+.exercise-body .etime{font-size:11px;color:var(--muted-foreground);display:flex;align-items:center;gap:4px;margin-bottom:8px}
+.exercise-body .ereason{font-size:11px;color:#b45309;background:hsl(38 92% 50%/5%);padding:8px 10px;border-radius:6px;line-height:1.6}
+.acupoint-group{margin-bottom:14px}
+.acupoint-group-title{font-size:12px;font-weight:600;color:var(--muted-foreground);margin-bottom:8px;padding-left:8px;border-left:3px solid var(--primary)}
+.acupoint-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.acupoint-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:all .2s}
+.acupoint-card:hover{border-color:var(--primary)}
+.acupoint-card img{width:100%;height:100px;object-fit:cover}
+.acupoint-card .abody{padding:10px}
+.acupoint-card .aname{font-size:12px;font-weight:700;margin-bottom:3px}
+.acupoint-card .aeffect{font-size:11px;color:var(--muted-foreground)}
+.acupoint-card .adetail{display:none;font-size:11px;color:var(--muted-foreground);padding-top:8px;margin-top:8px;border-top:1px dashed var(--border);line-height:1.6}
+.acupoint-card.open .adetail{display:block}
+.shichen-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin-bottom:10px}
+.shichen-cell{border:1px solid var(--border);background:var(--card);border-radius:6px;padding:8px 4px;text-align:center;font-size:10px}
+.shichen-cell.highlight{border-color:hsl(5 75% 45%/40%);background:hsl(5 75% 45%/5%);box-shadow:0 1px 4px hsl(5 75% 45%/10%)}
+.shichen-cell .sname{font-weight:700;font-size:11px;margin-bottom:2px}
+.shichen-cell.highlight .sname{color:var(--primary)}
+.shichen-cell .stime{color:var(--muted-foreground);margin-bottom:2px}
+.shichen-cell .sjing{font-weight:600;margin-bottom:2px}
+.shichen-cell.highlight .sjing{color:var(--primary)}
+.shichen-cell .sadvice{color:var(--muted-foreground);font-size:9px;line-height:1.4}
+.shichen-tip{font-size:11px;color:var(--muted-foreground);margin-bottom:14px}
+.emotion-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:14px}
+.emotion-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;gap:14px}
+.emotion-icon{width:56px;height:56px;background:hsl(30 20% 85%/30%);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+.emotion-body{flex:1}
+.emotion-body .ename{font-size:14px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.emotion-body .edesc{font-size:12px;color:var(--muted-foreground);margin-bottom:8px;line-height:1.6}
+.emotion-body .esheng{font-size:12px;color:var(--primary);font-weight:600;margin-bottom:6px}
+.emotion-body .eadvice{font-size:11px;color:var(--muted-foreground);line-height:1.6}
+.season-box{background:hsl(5 75% 45%/5%);border-radius:8px;padding:12px 16px;font-size:12px;line-height:1.8;margin-bottom:14px}
+.principle-box{display:flex;gap:12px;align-items:flex-start;background:hsl(30 20% 85%/15%);border-radius:8px;padding:14px 16px}
+.principle-box .icon{font-size:20px;flex-shrink:0}
+.principle-box .text{font-size:12px;font-style:italic;color:var(--muted-foreground);line-height:1.8}
+.principle-box .source{font-size:11px;color:var(--primary);margin-top:4px;font-style:normal}
+.ref-accordion{border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden}
+.ref-accordion summary{padding:12px 16px;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;list-style:none;background:hsl(30 20% 85%/10%)}
+.ref-accordion summary::-webkit-details-marker{display:none}
+.ref-accordion summary::before{content:'▶';font-size:10px;color:var(--primary);transition:transform .2s}
+.ref-accordion[open] summary::before{transform:rotate(90deg)}
+.ref-accordion .count{margin-left:auto;font-size:11px;color:var(--muted-foreground);background:#fff;padding:2px 8px;border-radius:10px;border:1px solid var(--border)}
+.ref-accordion .content{padding:14px 16px}
+.ref-item{background:hsl(30 20% 85%/10%);border-radius:6px;padding:10px 12px;margin-bottom:8px}
+.ref-item .quote{font-size:12px;color:var(--foreground);line-height:1.8;font-style:italic;margin-bottom:6px}
+.ref-item .usage{font-size:11px;color:var(--muted-foreground)}
+.footer{text-align:center;padding:24px;color:var(--muted-foreground);font-size:11px;border-top:1px solid var(--border);margin-top:40px}
+@media(max-width:768px){
+  .grid-12{grid-template-columns:1fr}
+  .col-4,.col-5,.col-3,.col-9,.col-6{grid-column:span 1}
+  .top5-grid{grid-template-columns:repeat(2,1fr)}
+  .food-grid{grid-template-columns:repeat(3,1fr)}
+  .exercise-grid{grid-template-columns:1fr}
+  .combo-grid{grid-template-columns:1fr}
+  .emotion-grid{grid-template-columns:1fr}
+  .acupoint-grid{grid-template-columns:repeat(2,1fr)}
+  .shichen-grid{grid-template-columns:repeat(4,1fr)}
+  .radar-container{grid-template-columns:1fr}
+  .form-row{flex-direction:column}
+}
+
+/* ========== 两步流程 & 问卷样式 ========== */
+.step-indicator{display:flex;align-items:center;justify-content:center;margin:16px 0 20px;gap:0}
+.step-indicator .step-item{display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:20px;background:hsl(30 20% 85%/30%);transition:all .3s}
+.step-indicator .step-item.active{background:hsl(5 75% 45%/15%);border:1px solid hsl(5 75% 45%/30%)}
+.step-indicator .step-num{width:24px;height:24px;border-radius:50%;background:hsl(30 10% 70%);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+.step-indicator .step-item.active .step-num{background:hsl(5 75% 45%)}
+.step-indicator .step-label{font-size:13px;font-weight:500;color:var(--muted-foreground)}
+.step-indicator .step-item.active .step-label{color:hsl(5 75% 45%)}
+.step-indicator .step-line{width:40px;height:2px;background:hsl(30 10% 80%);margin:0 4px}
+
+.calendar-toggle{display:flex;gap:0;margin:12px 0;border:1px solid var(--border);border-radius:8px;overflow:hidden;width:fit-content}
+.cal-btn{padding:8px 24px;border:none;background:var(--card);cursor:pointer;font-size:13px;font-family:inherit;color:var(--muted-foreground);transition:all .2s}
+.cal-btn.active{background:hsl(5 75% 45%);color:#fff;font-weight:500}
+.cal-btn:hover:not(.active){background:hsl(30 20% 85%/30%)}
+
+.form-hint{font-size:12px;color:hsl(35 80% 40%);background:hsl(45 90% 50%/8%);padding:10px 14px;border-radius:8px;margin:12px 0;border-left:3px solid hsl(45 90% 50%)}
+.required{color:hsl(0 84% 60%);font-weight:600}
+
+.questionnaire-header{margin-bottom:20px;padding:16px;background:hsl(200 70% 50%/5%);border-radius:10px;border-left:3px solid hsl(200 70% 50%)}
+.questionnaire-header h3{margin:0 0 8px;font-size:16px;color:var(--foreground)}
+.questionnaire-header p{margin:0;font-size:13px;color:var(--muted-foreground);line-height:1.6}
+
+.question-group{margin-bottom:20px}
+.question-group-title{font-size:14px;font-weight:600;margin-bottom:10px;padding:8px 12px;background:hsl(30 20% 85%/20%);border-radius:6px;display:flex;align-items:center;gap:8px}
+.question-group-title .badge{font-size:11px;padding:2px 8px}
+
+.question-item{padding:12px 14px;margin-bottom:8px;background:var(--card);border:1px solid var(--border);border-radius:8px;transition:border-color .2s}
+.question-item:hover{border-color:hsl(5 75% 45%/30%)}
+.question-text{font-size:13px;margin-bottom:10px;color:var(--foreground);line-height:1.5}
+.question-options{display:flex;gap:6px;flex-wrap:wrap}
+.question-options label{flex:1;min-width:70px;text-align:center;padding:6px 4px;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:12px;color:var(--muted-foreground);transition:all .2s;background:var(--background)}
+.question-options label:hover{border-color:hsl(5 75% 45%/40%)}
+.question-options input[type="radio"]{display:none}
+.question-options input[type="radio"]:checked + span{color:#fff}
+.question-options label:has(input:checked){background:hsl(5 75% 45%);color:#fff;border-color:hsl(5 75% 45%)}
+
+.step-buttons{display:flex;gap:12px;margin-top:24px;justify-content:space-between}
+.step-buttons .btn{flex:1;max-width:200px}
+
+/* 复合证型样式 */
+/* 问卷自动填写动画 */
+.auto-fill-progress{position:sticky;top:0;z-index:100;background:linear-gradient(90deg,hsl(5,75%,45%),hsl(25,80%,50%));height:4px;border-radius:2px;transition:width .3s ease;margin-bottom:12px}
+.auto-fill-tip{background:hsl(150,50%,40%,0.08);border:1px solid hsl(150,50%,40%,0.2);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:13px;color:hsl(150,50%,35%);display:none;animation:fadeIn .5s ease}
+.auto-fill-tip.show{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.question-item.auto-filling{border-color:hsl(5,75%,45%,0.5);box-shadow:0 0 0 2px hsl(5,75%,45%,0.15);animation:pulse .6s ease}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 2px hsl(5,75%,45%,0.15)}50%{box-shadow:0 0 0 4px hsl(5,75%,45%,0.25)}}
+.question-options label.auto-selected{background:hsl(5,75%,45%)!important;color:#fff!important;border-color:hsl(5,75%,45%)!important;animation:popIn .3s ease}
+@keyframes popIn{0%{transform:scale(0.8)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+
+.syndrome-pattern-card{padding:16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:12px}
+.syndrome-pattern-card .pattern-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.syndrome-pattern-card .pattern-name{font-size:15px;font-weight:600;color:hsl(280 60% 40%)}
+.syndrome-pattern-card .pattern-type{font-size:11px;padding:3px 10px;border-radius:10px;background:hsl(280 60% 40%/10%);color:hsl(280 60% 40%)}
+.syndrome-pattern-card .pattern-desc{font-size:13px;color:var(--muted-foreground);line-height:1.6;margin-bottom:10px}
+.syndrome-pattern-card .pattern-symptoms{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.syndrome-pattern-card .pattern-treatment{font-size:12px;padding:8px 12px;background:hsl(150 50% 40%/5%);border-radius:6px;border-left:2px solid hsl(150 50% 40%)}
+.syndrome-pattern-card .pattern-formula{font-size:12px;color:hsl(200 70% 40%);margin-top:6px}
+
+.disclaimer-box{font-size:11px;color:hsl(0 0% 50%);background:hsl(0 0% 95%);padding:8px 12px;border-radius:6px;margin-top:12px;border:1px dashed hsl(0 0% 80%)}
+
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-icon">☯</div>
+    <div>
+      <h1>中医先天禀赋推演系统</h1>
+    </div>
+  </div>
+  <div class="subtitle">基于五运六气理论 · 体质辨识与养生调理</div>
+  <div class="right">基于《素问》《灵枢》</div>
+</div>
+
+<div class="nav" id="nav">
+  <div class="nav-item active" data-target="module1"><span class="num">1</span>结论概览</div>
+  <div class="nav-item" data-target="module2"><span class="num">2</span>五脏能量变化</div>
+  <div class="nav-item" data-target="module3"><span class="num">3</span>体质与健康风险</div>
+  <div class="nav-item" data-target="module4"><span class="num">4</span>调理方案</div>
+  <div class="nav-item" data-target="module5"><span class="num">5</span>参考依据</div>
+</div>
+
+<div class="container" id="container">
+  <div class="input-card" id="inputCard">
+    <div class="icon">☯</div>
+    <h2>中医先天禀赋推演</h2>
+    <p class="desc">输入您的出生信息，系统将基于《黄帝内经》五运六气理论推演您的先天体质与调理方案</p>
+    
+    <!-- 步骤指示器 -->
+    <div class="step-indicator">
+      <div class="step-item active" id="stepInd1"><span class="step-num">1</span><span class="step-label">基础信息</span></div>
+      <div class="step-line"></div>
+      <div class="step-item" id="stepInd2"><span class="step-num">2</span><span class="step-label">体质问卷（可选）</span></div>
+    </div>
+    
+    <!-- 第一步：基础信息 -->
+    <div id="step1">
+      <button class="btn btn-secondary" onclick="loadExample()">加载示例数据</button>
+      
+      <!-- 阳历农历切换 -->
+      <div class="calendar-toggle">
+        <button class="cal-btn active" id="calSolar" onclick="switchCalendar('solar')">阳历</button>
+        <button class="cal-btn" id="calLunar" onclick="switchCalendar('lunar')">农历</button>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>出生年份 <span class="required">*</span></label>
+          <input type="number" id="birthYear" placeholder="如 1995" min="1900" max="2026">
+        </div>
+        <div class="form-group">
+          <label>性别</label>
+          <select id="gender">
+            <option value="male">男</option>
+            <option value="female">女</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>出生月份（选填）</label>
+          <select id="birthMonth"><option value="">不填</option></select>
+        </div>
+        <div class="form-group">
+          <label>出生日期（选填）</label>
+          <select id="birthDay"><option value="">不填</option></select>
+        </div>
+        <div class="form-group">
+          <label>出生时辰（选填）</label>
+          <select id="birthHour">
+            <option value="">不填</option>
+            <option value="子">子时(23-1点)</option>
+            <option value="丑">丑时(1-3点)</option>
+            <option value="寅">寅时(3-5点)</option>
+            <option value="卯">卯时(5-7点)</option>
+            <option value="辰">辰时(7-9点)</option>
+            <option value="巳">巳时(9-11点)</option>
+            <option value="午">午时(11-13点)</option>
+            <option value="未">未时(13-15点)</option>
+            <option value="申">申时(15-17点)</option>
+            <option value="酉">酉时(17-19点)</option>
+            <option value="戌">戌时(19-21点)</option>
+            <option value="亥">亥时(21-23点)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>出生省份</label>
+          <select id="birthProvince"><option value="">请选择</option></select>
+        </div>
+        <div class="form-group">
+          <label>出生城市</label>
+          <select id="birthCity"><option value="">请选择</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>当前年龄</label>
+          <input type="number" id="currentAge" placeholder="自动计算" readonly>
+        </div>
+        <div class="form-group">
+          <label>职业类型</label>
+          <select id="occupation">
+            <option value="it">互联网/IT-程序员</option>
+            <option value="design">设计/创意</option>
+            <option value="finance">金融/投资</option>
+            <option value="education">教育/培训</option>
+            <option value="medical">医疗/健康</option>
+            <option value="sales">销售/市场</option>
+            <option value="manager">管理/行政</option>
+            <option value="manufacture">制造/生产</option>
+            <option value="service">服务/餐饮</option>
+            <option value="student">学生</option>
+            <option value="freelance">自由职业</option>
+            <option value="retired">退休</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>现居省份</label>
+          <select id="currentProvince"><option value="">请选择</option></select>
+        </div>
+        <div class="form-group">
+          <label>现居城市</label>
+          <select id="currentCity"><option value="">请选择</option></select>
+        </div>
+      </div>
+      <div class="form-hint">💡 填写出生月、日、时辰后，系统将按五运六气精细化逻辑（主气六步、客气六步、客主加临、运气同化）进行更精准的推演。</div>
+      <button class="btn" onclick="goToStep2()">下一步：体质问卷（可选）→</button>
+    </div>
+    
+    <!-- 第二步：体质问卷 -->
+    <div id="step2" style="display:none">
+      <div class="questionnaire-header">
+        <h3>📋 体质辨识问卷（可选）</h3>
+        <p>根据您的先天推演结果，系统智能推荐了以下最相关的问题，帮助更精准地判断您的体质类型。填写后推演结果将结合问卷评分进行修正。</p>
+      </div>
+      <div id="recommendedQuestions"></div>
+      <details class="details-box">
+        <summary>展开更多问题（其余体质类型，共 <span id="otherCount">0</span> 题）</summary>
+        <div id="otherQuestions"></div>
+      </details>
+      <div class="step-buttons">
+        <button class="btn btn-secondary" onclick="goToStep1()">← 上一步</button>
+        <button class="btn btn-secondary" onclick="skipQuestionnaire()">跳过问卷，直接推演</button>
+        <button class="btn" onclick="calculate()">开始推演 →</button>
+      </div>
+    </div>
+  </div>
+  <div id="resultArea"></div>
+</div>
+
+<div class="footer">
+  本系统基于中医传统理论模型推演，仅供学习参考和养生指导，不构成医疗诊断。如有健康问题，请及时咨询专业中医师或就医。
+</div>
+
+<script>
+// ========== 数据定义 ==========
+const TIAN_GAN=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+const DI_ZHI=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+const GAN_WUXING={甲:'木',乙:'木',丙:'火',丁:'火',戊:'土',己:'土',庚:'金',辛:'金',壬:'水',癸:'水'};
+const GAN_YINYANG={甲:'阳',乙:'阴',丙:'阳',丁:'阴',戊:'阳',己:'阴',庚:'阳',辛:'阴',壬:'阳',癸:'阴'};
+const ZANG_WUXING={木:'肝',火:'心',土:'脾',金:'肺',水:'肾'};
+const WUXING_ZANG={肝:'木',心:'火',脾:'土',肺:'金',肾:'水'};
+const SHENG={木:'火',火:'土',土:'金',金:'水',水:'木'};
+const KE={木:'土',土:'水',水:'火',火:'金',金:'木'};
+const ZHI_LIUQI={子:'少阴君火',午:'少阴君火',丑:'太阴湿土',未:'太阴湿土',寅:'少阳相火',申:'少阳相火',卯:'阳明燥金',酉:'阳明燥金',辰:'太阳寒水',戌:'太阳寒水',巳:'厥阴风木',亥:'厥阴风木'};
+const LIUQI_WUXING={'厥阴风木':'木','少阴君火':'火','少阳相火':'火','太阴湿土':'土','阳明燥金':'金','太阳寒水':'水'};
+const ENERGY_COLORS={3:'#1e3a8a',2:'#2563eb',1:'#3b82f6',0:'#16a34a','-1':'#f97316','-2':'#dc2626','-3':'#b91c1c'};
+const ENERGY_LABELS={3:'过强',2:'强',1:'偏强',0:'平和','-1':'偏弱','-2':'弱','-3':'过弱'};
+
+const PROVINCES={"北京市":{cities:['东城区','西城区','朝阳区','海淀区','丰台区','石景山区','通州区','昌平区'],direction:'北'},"天津市":{cities:['和平区','河东区','河西区','南开区','河北区','红桥区','滨海新区'],direction:'北'},"河北省":{cities:['石家庄市','唐山市','秦皇岛市','邯郸市','邢台市','保定市','张家口市','承德市','沧州市','廊坊市','衡水市'],direction:'中'},"山西省":{cities:['太原市','大同市','阳泉市','长治市','晋城市','朔州市','晋中市','运城市','忻州市','临汾市','吕梁市'],direction:'中'},"内蒙古自治区":{cities:['呼和浩特市','包头市','乌海市','赤峰市','通辽市','鄂尔多斯市','呼伦贝尔市'],direction:'北'},"辽宁省":{cities:['沈阳市','大连市','鞍山市','抚顺市','本溪市','丹东市','锦州市','营口市'],direction:'北'},"吉林省":{cities:['长春市','吉林市','四平市','辽源市','通化市','白山市','松原市','白城市'],direction:'北'},"黑龙江省":{cities:['哈尔滨市','齐齐哈尔市','鸡西市','鹤岗市','双鸭山市','大庆市','伊春市','佳木斯市'],direction:'北'},"上海市":{cities:['黄浦区','徐汇区','长宁区','静安区','普陀区','虹口区','杨浦区','浦东新区','闵行区','宝山区'],direction:'东'},"江苏省":{cities:['南京市','无锡市','徐州市','常州市','苏州市','南通市','连云港市','淮安市','盐城市','扬州市','镇江市','泰州市','宿迁市'],direction:'东'},"浙江省":{cities:['杭州市','宁波市','温州市','嘉兴市','湖州市','绍兴市','金华市','衢州市','舟山市','台州市','丽水市'],direction:'东'},"安徽省":{cities:['合肥市','芜湖市','蚌埠市','淮南市','马鞍山市','淮北市','铜陵市','安庆市','黄山市','滁州市'],direction:'东'},"福建省":{cities:['福州市','厦门市','莆田市','三明市','泉州市','漳州市','南平市','龙岩市','宁德市'],direction:'南'},"江西省":{cities:['南昌市','景德镇市','萍乡市','九江市','新余市','鹰潭市','赣州市','吉安市','宜春市','抚州市','上饶市'],direction:'中'},"山东省":{cities:['济南市','青岛市','淄博市','枣庄市','东营市','烟台市','潍坊市','济宁市','泰安市','威海市','日照市','临沂市','德州市','聊城市','滨州市','菏泽市'],direction:'东'},"河南省":{cities:['郑州市','开封市','洛阳市','平顶山市','安阳市','鹤壁市','新乡市','焦作市','濮阳市','许昌市','漯河市','三门峡市','南阳市','商丘市','信阳市','周口市','驻马店市'],direction:'中'},"湖北省":{cities:['武汉市','黄石市','十堰市','宜昌市','襄阳市','鄂州市','荆门市','孝感市','荆州市','黄冈市','咸宁市','随州市'],direction:'中'},"湖南省":{cities:['长沙市','株洲市','湘潭市','衡阳市','邵阳市','岳阳市','常德市','张家界市','益阳市','郴州市','永州市','怀化市','娄底市'],direction:'南'},"广东省":{cities:['广州市','韶关市','深圳市','珠海市','汕头市','佛山市','江门市','湛江市','茂名市','肇庆市','惠州市','梅州市','汕尾市','河源市','阳江市','清远市','东莞市','中山市','潮州市','揭阳市','云浮市'],direction:'南'},"广西壮族自治区":{cities:['南宁市','柳州市','桂林市','梧州市','北海市','防城港市','钦州市','贵港市','玉林市','百色市','贺州市','河池市','来宾市','崇左市'],direction:'南'},"海南省":{cities:['海口市','三亚市','三沙市','儋州市'],direction:'南'},"重庆市":{cities:['渝中区','大渡口区','江北区','沙坪坝区','九龙坡区','南岸区','北碚区','渝北区','巴南区','万州区','涪陵区'],direction:'南'},"四川省":{cities:['成都市','自贡市','攀枝花市','泸州市','德阳市','绵阳市','广元市','遂宁市','内江市','乐山市','南充市','眉山市','宜宾市','广安市','达州市','雅安市','巴中市','资阳市'],direction:'西'},"贵州省":{cities:['贵阳市','六盘水市','遵义市','安顺市','毕节市','铜仁市'],direction:'南'},"云南省":{cities:['昆明市','曲靖市','玉溪市','保山市','昭通市','丽江市','普洱市','临沧市'],direction:'西'},"西藏自治区":{cities:['拉萨市','日喀则市','昌都市','林芝市','山南市','那曲市','阿里地区'],direction:'西'},"陕西省":{cities:['西安市','铜川市','宝鸡市','咸阳市','渭南市','延安市','汉中市','榆林市','安康市','商洛市'],direction:'西'},"甘肃省":{cities:['兰州市','嘉峪关市','金昌市','白银市','天水市','武威市','张掖市','平凉市','酒泉市','庆阳市','定西市','陇南市'],direction:'西'},"青海省":{cities:['西宁市','海东市','海北藏族自治州','黄南藏族自治州','海南藏族自治州','果洛藏族自治州','玉树藏族自治州','海西蒙古族藏族自治州'],direction:'西'},"宁夏回族自治区":{cities:['银川市','石嘴山市','吴忠市','固原市','中卫市'],direction:'西'},"新疆维吾尔自治区":{cities:['乌鲁木齐市','克拉玛依市','吐鲁番市','哈密市','昌吉回族自治州','博尔塔拉蒙古自治州','巴音郭楞蒙古自治州','阿克苏地区','克孜勒苏柯尔克孜自治州','喀什地区','和田地区','伊犁哈萨克自治州','塔城地区','阿勒泰地区'],direction:'西'},"台湾省":{cities:['台北市','新北市','桃园市','台中市','台南市','高雄市','基隆市','新竹市','嘉义市'],direction:'东'},"香港特别行政区":{cities:['中西区','湾仔区','东区','南区','油尖旺区','深水埗区','九龙城区','黄大仙区','观塘区','荃湾区','屯门区','元朗区','北区','大埔区','西贡区','沙田区','葵青区','离岛区'],direction:'南'},"澳门特别行政区":{cities:['花地玛堂区','花王堂区','望德堂区','大堂区','风顺堂区','嘉模堂区','路凼填海区','圣方济各堂区'],direction:'南'}};
+
+const OCCUPATION_EFFECTS={it:{name:'互联网/IT-程序员',effects:{心:-1,肝:-1,脾:-1,肺:0,肾:0},tags:['久坐','久视屏幕','熬夜','用脑过度','缺乏运动']},design:{name:'设计/创意',effects:{心:-1,肝:-1,脾:0,肺:0,肾:0},tags:['久坐','久视','熬夜','精神紧张']},finance:{name:'金融/投资',effects:{心:-1,肝:-1,脾:-1,肺:0,肾:0},tags:['久坐','精神高压','熬夜','思虑过度']},education:{name:'教育/培训',effects:{心:0,肝:0,脾:-1,肺:-1,肾:0},tags:['久站','多言','用嗓过度','思虑']},medical:{name:'医疗/健康',effects:{心:-1,肝:0,脾:-1,肺:0,肾:0},tags:['倒班','熬夜','精神紧张','久站']},sales:{name:'销售/市场',effects:{心:0,肝:-1,脾:-1,肺:0,肾:0},tags:['应酬','饮酒','饮食不规律','奔波']},manager:{name:'管理/行政',effects:{心:-1,肝:-1,脾:0,肺:0,肾:0},tags:['久坐','思虑过度','精神压力','应酬']},manufacture:{name:'制造/生产',effects:{心:0,肝:0,脾:0,肺:-1,肾:-1},tags:['久站','体力劳动','噪音','粉尘','倒班']},service:{name:'服务/餐饮',effects:{心:0,肝:0,脾:-1,肺:0,肾:-1},tags:['久站','多言','饮食不规律','熬夜']},student:{name:'学生',effects:{心:-1,肝:0,脾:-1,肺:0,肾:0},tags:['久坐','久视','用脑过度','熬夜','饮食不规律']},freelance:{name:'自由职业',effects:{心:0,肝:0,脾:-1,肺:0,肾:0},tags:['作息不规律','久坐','饮食不规律']},retired:{name:'退休',effects:{心:0,肝:0,脾:0,肺:0,肾:-1},tags:['活动减少','肾气渐衰','闲逸过度']}};
+
+const FOODS={肝:[{name:'西兰花',img:'https://aka.doubaocdn.com/s/klBIk5GYkE',symptom:'肝火旺/目赤'},{name:'菠菜',img:'https://aka.doubaocdn.com/s/M64VYQKfGf',symptom:'肝血虚/眩晕'},{name:'芹菜',img:'https://aka.doubaocdn.com/s/JFrDySCuuw',symptom:'肝阳上亢/高血压'},{name:'绿豆',img:'https://aka.doubaocdn.com/s/kiRRywE4yK',symptom:'肝火/解毒'},{name:'猕猴桃',img:'https://aka.doubaocdn.com/s/lmMq5syJpy',symptom:'肝阴不足/口干'}],心:[{name:'红枣',img:'https://aka.doubaocdn.com/s/H3W33oLfXV',symptom:'心血虚/失眠'},{name:'西红柿',img:'https://aka.doubaocdn.com/s/mOUrGj6Agt',symptom:'心火/口干'},{name:'山楂',img:'https://aka.doubaocdn.com/s/U1zXAmVlUg',symptom:'心血瘀/胸闷'},{name:'红豆',img:'https://aka.doubaocdn.com/s/C1hvxh0tBk',symptom:'心气虚/乏力'},{name:'莲子',img:'https://aka.doubaocdn.com/s/S8LFvyYQSF',symptom:'心神不宁/心悸'}],脾:[{name:'南瓜',img:'https://aka.doubaocdn.com/s/JOAUCmM3ht',symptom:'脾虚/腹胀'},{name:'小米',img:'https://aka.doubaocdn.com/s/U3VIjrZPyv',symptom:'脾胃虚弱/纳差'},{name:'山药',img:'https://aka.doubaocdn.com/s/6mDteORcAu',symptom:'脾虚/便溏'},{name:'红薯',img:'https://aka.doubaocdn.com/s/1DVA8hiFc0',symptom:'脾虚/便秘'},{name:'蜂蜜',img:'https://aka.doubaocdn.com/s/Drr6bqsVjS',symptom:'脾肺虚/燥咳'}],肺:[{name:'银耳',img:'https://aka.doubaocdn.com/s/tTqipXF2ft',symptom:'肺阴虚/干咳'},{name:'百合',img:'https://aka.doubaocdn.com/s/pTDbVZlGD7',symptom:'肺燥/咳嗽'},{name:'梨',img:'https://aka.doubaocdn.com/s/UJ5dHM1uqm',symptom:'肺热/咽干'},{name:'白萝卜',img:'https://aka.doubaocdn.com/s/ISoCFjnAB6',symptom:'肺胀/痰多'},{name:'杏仁',img:'https://aka.doubaocdn.com/s/HWGpVuPSIZ',symptom:'肺咳/气喘'}],肾:[{name:'黑豆',img:'https://aka.doubaocdn.com/s/meagEZbGxB',symptom:'肾虚/腰膝酸软'},{name:'黑芝麻',img:'https://aka.doubaocdn.com/s/2Z0T5E04oC',symptom:'肾精不足/脱发'},{name:'黑米',img:'https://aka.doubaocdn.com/s/lIOCo85gHq',symptom:'肾阴虚/耳鸣'},{name:'核桃',img:'https://aka.doubaocdn.com/s/GPvOtecxKG',symptom:'肾虚/健忘'},{name:'桑葚',img:'https://aka.doubaocdn.com/s/1oulVx6ErM',symptom:'肝肾阴虚/目暗'}]};
+const AVOID_FOODS=[
+{name:'糖果甜食',img:'https://aka.doubaocdn.com/s/etTD9VJgpI',reason:'过甜伤肾，甘入脾，脾土过旺克伐肾水',affectedZang:['肾']},
+{name:'蛋糕甜点',img:'https://aka.doubaocdn.com/s/OjTE9wsdnX',reason:'高糖高脂，生湿生痰，困脾伤肾',affectedZang:['肾','脾']},
+{name:'含糖饮料',img:'https://aka.doubaocdn.com/s/xHMnfUVHF3',reason:'寒凉甜腻，伤脾阳，过甜伤肾',affectedZang:['肾','脾']},
+{name:'油炸食品',img:'https://aka.doubaocdn.com/s/Ng4RcOfR08',reason:'油腻生湿生热，困脾伤肝，加重内热',affectedZang:['脾','肝']},
+{name:'油条',img:'https://aka.doubaocdn.com/s/kL34t0u1pL',reason:'油炸高油高盐，损伤脾胃，生湿生热',affectedZang:['脾']},
+{name:'咸菜腌制品',img:'https://aka.doubaocdn.com/s/NJmY3U6VGf',reason:'高盐伤肾，咸入肾，过咸伤肾',affectedZang:['肾']},
+{name:'薯片高盐零食',img:'https://aka.doubaocdn.com/s/g3CxzMKPUF',reason:'高盐高油，伤肾困脾，添加剂多',affectedZang:['肾','脾']},
+{name:'辣椒辛辣',img:'https://aka.doubaocdn.com/s/oUUsNL1ZyJ',reason:'辛温助火，肝火旺者忌辛，助火克肝',affectedZang:['肝']},
+{name:'冷饮冰淇淋',img:'https://aka.doubaocdn.com/s/eRViHc5MNN',reason:'生冷伤脾阳，寒邪伤肾，凝滞气血',affectedZang:['脾','肾']},
+{name:'肥肉油腻',img:'https://aka.doubaocdn.com/s/dJODb0wlb2',reason:'油腻生湿，困脾伤肝，阻滞气机',affectedZang:['脾','肝']},
+{name:'酒精啤酒',img:'https://aka.doubaocdn.com/s/B9Bl8ouqHw',reason:'伤肝生湿，湿热内蕴，加重肝胆负担',affectedZang:['肝','脾']},
+{name:'方便面加工食品',img:'https://aka.doubaocdn.com/s/1HE1Cq22yg',reason:'高盐高油添加剂，伤脾肾，缺乏营养',affectedZang:['脾','肾']}
+];
+
+const ORGAN_IMGS={肝:'https://aka.doubaocdn.com/s/RnuxAWViBF',心:'https://aka.doubaocdn.com/s/gXvRWJGuPg',脾:'https://aka.doubaocdn.com/s/mwUdBR6r4T',肺:'https://aka.doubaocdn.com/s/ikSCrNMqZW',肾:'https://aka.doubaocdn.com/s/bDkahnNITZ'};
+
+const EXERCISES=[
+{name:'户外跑步',img:'https://aka.doubaocdn.com/s/j0BE6NicnX',imgFemale:'https://aka.doubaocdn.com/s/vbntFZqYFb',effect:'增强心肺、促进气血循环',time:'清晨或傍晚',benefitZang:['心','肺'],type:'有氧运动'},
+{name:'瑜伽',img:'https://aka.doubaocdn.com/s/vLTFUlU4Z6',imgFemale:'https://aka.doubaocdn.com/s/Des9CFATRB',effect:'舒展筋骨、调节呼吸、安神',time:'清晨或睡前',benefitZang:['肝','心'],type:'柔韧拉伸'},
+{name:'哑铃训练',img:'https://aka.doubaocdn.com/s/zNcE8omKNL',imgFemale:'https://aka.doubaocdn.com/s/qkEJfl4BcW',effect:'增肌强骨、提升代谢',time:'下午4-6点',benefitZang:['肾','脾'],type:'力量训练'},
+{name:'户外骑行',img:'https://aka.doubaocdn.com/s/Xm7xAvVJx9',imgFemale:'https://aka.doubaocdn.com/s/d9Utts7FVZ',effect:'增强心肺、锻炼下肢',time:'清晨或傍晚',benefitZang:['心','肺','肾'],type:'有氧运动'},
+{name:'跑步机',img:'https://aka.doubaocdn.com/s/PQrjWPJJEv',imgFemale:'https://aka.doubaocdn.com/s/loXRlTnHgR',effect:'增强心肺、控制体重',time:'任何时间',benefitZang:['心','肺'],type:'有氧运动'},
+{name:'动感单车',img:'https://aka.doubaocdn.com/s/nSvUIFCose',imgFemale:'https://aka.doubaocdn.com/s/9RI3QyC1gC',effect:'高强度燃脂、增强心肺',time:'下午或晚上',benefitZang:['心','肺'],type:'有氧运动'},
+{name:'游泳',img:'https://aka.doubaocdn.com/s/XDWsI6kthF',imgFemale:'https://aka.doubaocdn.com/s/2NreKZTicL',effect:'全身锻炼、保护关节、增强心肺',time:'下午4-6点',benefitZang:['心','肺','肾'],type:'有氧运动'},
+{name:'杠铃深蹲',img:'https://aka.doubaocdn.com/s/PDIBvVziz4',imgFemale:'https://aka.doubaocdn.com/s/92D5ZcH7n5',effect:'强腰固肾、锻炼下肢',time:'下午4-6点',benefitZang:['肾','脾'],type:'力量训练'},
+{name:'椭圆机',img:'https://aka.doubaocdn.com/s/Qpgi2dc0Ea',imgFemale:'https://aka.doubaocdn.com/s/2sLmwoMeBV',effect:'低冲击有氧、保护膝盖',time:'任何时间',benefitZang:['心','肺'],type:'有氧运动'},
+{name:'划船机',img:'https://aka.doubaocdn.com/s/pm92ioPUZm',imgFemale:'https://aka.doubaocdn.com/s/lGal23cWuV',effect:'全身协调、锻炼背肌',time:'下午4-6点',benefitZang:['心','肺','脾'],type:'有氧运动'},
+{name:'跳绳',img:'https://aka.doubaocdn.com/s/fJaI7ZqBM5',imgFemale:'https://aka.doubaocdn.com/s/CmIvGltAGS',effect:'高效燃脂、增强协调',time:'下午4-6点',benefitZang:['心','肾'],type:'有氧运动'},
+{name:'HIIT高强度间歇',img:'https://aka.doubaocdn.com/s/yOy0PGdWVA',imgFemale:'https://aka.doubaocdn.com/s/6V4VeFFiDH',effect:'高强度间歇、提升代谢',time:'下午4-6点',benefitZang:['心','肺'],type:'有氧运动'},
+{name:'普拉提',img:'https://aka.doubaocdn.com/s/bZerHzD2Jp',imgFemale:'https://aka.doubaocdn.com/s/99AroOpNPS',effect:'核心强化、体态矫正',time:'清晨或傍晚',benefitZang:['脾','肝'],type:'柔韧拉伸'},
+{name:'拳击沙袋',img:'https://aka.doubaocdn.com/s/V3iX6gfOMg',imgFemale:'https://aka.doubaocdn.com/s/pXngQwaBXm',effect:'释放压力、增强协调',time:'下午4-6点',benefitZang:['肝','心'],type:'力量训练'},
+{name:'登山徒步',img:'https://aka.doubaocdn.com/s/2xwZ2Dshnd',imgFemale:'https://aka.doubaocdn.com/s/QXCZ2GkIrV',effect:'增强心肺、锻炼下肢、亲近自然',time:'周末白天',benefitZang:['肺','肾'],type:'有氧运动'},
+{name:'羽毛球',img:'https://aka.doubaocdn.com/s/V0SMBhRpV5',imgFemale:'https://aka.doubaocdn.com/s/TFfGwcHAUI',effect:'全身协调、反应训练',time:'下午或晚上',benefitZang:['心','肝'],type:'有氧运动'},
+{name:'网球',img:'https://aka.doubaocdn.com/s/FyeXdUKrH3',imgFemale:'https://aka.doubaocdn.com/s/7QP24UjxQG',effect:'全身协调、心肺锻炼',time:'下午或晚上',benefitZang:['心','肺'],type:'有氧运动'},
+{name:'篮球',img:'https://aka.doubaocdn.com/s/RhV4xsokXe',imgFemale:'https://aka.doubaocdn.com/s/6ZSgHnp7zA',effect:'全身运动、团队协作',time:'下午或晚上',benefitZang:['心','肺','肾'],type:'有氧运动'},
+{name:'足球',img:'https://aka.doubaocdn.com/s/LXceWgIfER',imgFemale:'https://aka.doubaocdn.com/s/U4SoBj8n44',effect:'全身运动、耐力锻炼',time:'下午或晚上',benefitZang:['心','肺','肝'],type:'有氧运动'},
+{name:'有氧舞蹈',img:'https://aka.doubaocdn.com/s/LxBiWPtRRb',imgFemale:'https://aka.doubaocdn.com/s/94GnVuABLp',effect:'愉悦心情、全身律动',time:'晚上7-9点',benefitZang:['心','肝'],type:'有氧运动'},
+{name:'拉伸放松',img:'https://aka.doubaocdn.com/s/lmcZsMbuNa',imgFemale:'https://aka.doubaocdn.com/s/YFfSmob8Lf',effect:'放松肌肉、缓解紧张',time:'运动后或睡前',benefitZang:['肝','脾'],type:'柔韧拉伸'},
+{name:'冥想静坐',img:'https://aka.doubaocdn.com/s/ciyZhwnM1e',imgFemale:'https://aka.doubaocdn.com/s/s73VSVyMQJ',effect:'安神定志、调节情志',time:'清晨或睡前',benefitZang:['心','肝'],type:'平衡调节'},
+{name:'八段锦',img:'https://aka.doubaocdn.com/s/VLkOYyvcpB',imgFemale:'https://aka.doubaocdn.com/s/usvV7THnFR',effect:'疏肝理气、调理脾胃',time:'清晨6-8点',benefitZang:['肝','脾'],type:'传统功法'},
+{name:'太极拳',img:'https://aka.doubaocdn.com/s/tLUfCOdGCg',imgFemale:'https://aka.doubaocdn.com/s/q5OaS4pK3M',effect:'调和阴阳、疏通经络',time:'清晨6-8点',benefitZang:['肝','肾'],type:'传统功法'},
+{name:'平板支撑',img:'https://aka.doubaocdn.com/s/FBmtbXtqNQ',imgFemale:'https://aka.doubaocdn.com/s/dmQgANvzAQ',effect:'核心强化、稳定脊柱',time:'任何时间',benefitZang:['脾','肾'],type:'力量训练'},
+{name:'俯卧撑',img:'https://aka.doubaocdn.com/s/diHbIL6fNl',imgFemale:'https://aka.doubaocdn.com/s/KAcJ2gErvP',effect:'上肢力量、胸肌锻炼',time:'下午4-6点',benefitZang:['肺','脾'],type:'力量训练'},
+{name:'引体向上',img:'https://aka.doubaocdn.com/s/gshAysQyh9',imgFemale:'https://aka.doubaocdn.com/s/7LdGHBFMn4',effect:'背肌锻炼、增强上肢',time:'下午4-6点',benefitZang:['肺','肝'],type:'力量训练'},
+{name:'六字诀',img:'https://aka.doubaocdn.com/s/tAZhzt54Bu',imgFemale:'https://aka.doubaocdn.com/s/cIDIyVq1Fp',effect:'调息养脏、对应五脏',time:'清晨6-8点',benefitZang:['肝','心','脾','肺','肾'],type:'传统功法'},
+{name:'五禽戏',img:'https://aka.doubaocdn.com/s/31V3KtYolT',imgFemale:'https://aka.doubaocdn.com/s/atl9x4TlAo',effect:'模仿五禽动作、疏肝理气、强筋健骨',time:'清晨6-8点',benefitZang:['肝','脾','肾'],type:'传统功法'},
+{name:'易筋经',img:'https://aka.doubaocdn.com/s/5PZRMxCseY',imgFemale:'https://aka.doubaocdn.com/s/dsxf8eoKJ6',effect:'强筋健骨、疏通经络、调和气血',time:'清晨6-8点',benefitZang:['肝','肾','脾'],type:'传统功法'},
+{name:'快走',img:'https://aka.doubaocdn.com/s/ynYnEiLNRN',imgFemale:'https://aka.doubaocdn.com/s/u3QgLb9iuf',effect:'增强心肺、促进循环、控制体重',time:'清晨或傍晚',benefitZang:['心','肺','脾'],type:'有氧运动'}
+];
+
+const ACUPOINTS={肝:[{name:'太冲穴',img:'https://aka.doubaocdn.com/s/n7khfLxQKX',location:'足背，第1、2跖骨间凹陷处',effect:'疏肝理气、清肝泻火、平肝息风',method:'用拇指按揉3-5分钟，以酸胀为度，每日2次'}],心:[{name:'内关穴',img:'https://aka.doubaocdn.com/s/Cxaim9X1qx',location:'前臂掌侧，腕横纹上2寸，掌长肌腱与桡侧腕屈肌腱之间',effect:'宁心安神、理气止痛、和胃降逆',method:'用拇指按揉3-5分钟，每日2次'}],脾:[{name:'足三里',img:'https://aka.doubaocdn.com/s/eJWu7Dkv3L',location:'小腿外侧，犊鼻下3寸，胫骨前嵴外1横指处',effect:'健脾和胃、扶正培元、通经活络',method:'按揉5-10分钟或艾灸15分钟，每日1次'}],肺:[{name:'太渊穴',img:'https://aka.doubaocdn.com/s/VAjAiUOoVU',location:'腕掌侧横纹桡侧，桡动脉搏动处',effect:'宣肺平喘、通脉理血、清泻肺热',method:'用拇指按揉3分钟，每日2次'}],肾:[{name:'涌泉穴',img:'https://aka.doubaocdn.com/s/4wbhlU6vEi',location:'足底，屈足卷趾时足心最凹陷处',effect:'滋阴益肾、平肝息风、开窍醒神',method:'按揉5分钟或艾灸10分钟，每晚睡前'}]};
+
+const CONSTITUTIONS=[{name:'平和质',desc:'阴阳气血调和，体态适中、面色红润、精力充沛',criteria:'五脏能量均在-1到+1之间'},{name:'气虚质',desc:'元气不足，疲乏、气短、自汗',criteria:'脾或肺能量≤-2'},{name:'阳虚质',desc:'阳气不足，畏寒怕冷、手足不温',criteria:'肾或脾能量≤-2且无明显阴虚'},{name:'阴虚质',desc:'阴液亏少，口燥咽干、手足心热',criteria:'肾或肝能量≤-2且有心火偏旺'},{name:'痰湿质',desc:'痰湿凝聚，形体肥胖、腹部肥满',criteria:'脾能量≤-1且肺能量≤-1'},{name:'湿热质',desc:'湿热内蕴，面垢油光、口苦、苔黄腻',criteria:'脾或肝能量≥+1且有湿象'},{name:'血瘀质',desc:'血行不畅，肤色晦暗、舌质紫暗',criteria:'心能量≤-1或肝能量≥+1'},{name:'气郁质',desc:'气机郁滞，神情抑郁、情感脆弱',criteria:'肝能量≤-1或≥+2且心能量异常'},{name:'特禀质',desc:'先天禀赋不足，过敏体质',criteria:'肺或肾能量≤-2'}];
+
+const SYMPTOMS=[
+{name:'头晕目眩',zang:'肝',minLevel:1,weight:80,trend:'上焦头面',organ:'目',syndrome:'实'},
+{name:'烦躁易怒',zang:'肝',minLevel:1,weight:75,trend:'上焦头面',organ:'全身',syndrome:'实'},
+{name:'胁肋胀痛',zang:'肝',minLevel:-1,weight:70,trend:'中焦胸腹',organ:'全身',syndrome:'实'},
+{name:'目赤干涩',zang:'肝',minLevel:1,weight:65,trend:'上焦头面',organ:'目',syndrome:'热'},
+{name:'目赤肿痛',zang:'肝',minLevel:1,weight:75,trend:'上焦头面',organ:'目',syndrome:'热'},
+{name:'视物模糊',zang:'肝',minLevel:-1,weight:70,trend:'上焦头面',organ:'目',syndrome:'虚'},
+{name:'眼干眼涩',zang:'肝',minLevel:-1,weight:65,trend:'上焦头面',organ:'目',syndrome:'虚'},
+{name:'迎风流泪',zang:'肝',minLevel:-1,weight:55,trend:'上焦头面',organ:'目',syndrome:'虚'},
+{name:'眼痒',zang:'肝',minLevel:1,weight:50,trend:'上焦头面',organ:'目',syndrome:'实'},
+{name:'爪甲不荣',zang:'肝',minLevel:-1,weight:60,trend:'全身',organ:'全身',syndrome:'虚'},
+{name:'肢体麻木',zang:'肝',minLevel:-1,weight:65,trend:'全身',organ:'全身',syndrome:'虚'},
+{name:'关节拘急不利',zang:'肝',minLevel:-1,weight:55,trend:'全身',organ:'全身',syndrome:'虚'},
+{name:'手足震颤',zang:'肝',minLevel:1,weight:60,trend:'全身',organ:'全身',syndrome:'实'},
+{name:'肌肉瞤动',zang:'肝',minLevel:-1,weight:50,trend:'全身',organ:'全身',syndrome:'虚'},
+{name:'少腹冷痛',zang:'肝',minLevel:-1,weight:60,trend:'下焦二阴',organ:'二阴',syndrome:'寒'},
+{name:'睾丸坠胀',zang:'肝',minLevel:-1,weight:55,trend:'下焦二阴',organ:'二阴',syndrome:'寒'},
+{name:'巅顶冷痛',zang:'肝',minLevel:-1,weight:50,trend:'上焦头面',organ:'全身',syndrome:'寒'},
+{name:'胸胁窜痛',zang:'肝',minLevel:-1,weight:70,trend:'中焦胸腹',organ:'全身',syndrome:'实'},
+{name:'喜太息',zang:'肝',minLevel:-1,weight:60,trend:'全身',organ:'全身',syndrome:'实'},
+{name:'咽部梅核气',zang:'肝',minLevel:-1,weight:50,trend:'上焦头面',organ:'口',syndrome:'实'},
+{name:'乳房胀痛',zang:'肝',minLevel:-1,weight:55,trend:'中焦胸腹',organ:'全身',syndrome:'实'},
+{name:'头重足飘',zang:'肝',minLevel:1,weight:60,trend:'上焦头面',organ:'全身',syndrome:'实'},
+{name:'面尘脱色',zang:'肝',minLevel:-1,weight:45,trend:'上焦头面',organ:'全身',syndrome:'虚'},
+{name:'腰痛不可俯仰',zang:'肝',minLevel:-1,weight:55,trend:'下焦二阴',organ:'全身',syndrome:'实'},
+{name:'狐疝',zang:'肝',minLevel:-1,weight:45,trend:'下焦二阴',organ:'二阴',syndrome:'实'},
+{name:'遗溺闭癃',zang:'肝',minLevel:-1,weight:40,trend:'下焦二阴',organ:'二阴',syndrome:'实'},
+{name:'呕逆飧泄',zang:'肝',minLevel:1,weight:50,trend:'中焦胸腹',organ:'全身',syndrome:'实'},
+{name:'情绪低落',zang:'肝',minLevel:-1,weight:70,trend:'全身',organ:'全身',syndrome:'实'},
+{name:'失眠多梦',zang:'心',minLevel:1,weight:85,trend:'全身',organ:'全身',syndrome:'热'},
+{name:'心悸心慌',zang:'心',minLevel:-1,weight:75,trend:'中焦胸腹',organ:'全身',syndrome:'虚'},
+{name:'口舌生疮',zang:'心',minLevel:1,weight:70,trend:'上焦头面',organ:'舌',syndrome:'热'},
+{name:'胸闷气短',zang:'心',minLevel:-1,weight:65,trend:'中焦胸腹',organ:'全身',syndrome:'虚'},
+{name:'舌强不语',zang:'心',minLevel:1,weight:65,trend:'上焦头面',organ:'舌',syndrome:'实'},
+{name:'舌痛',zang:'心',minLevel:1,weight:60,trend:'上焦头面',organ:'舌',syndrome:'热'},
+{name:'味觉减退',zang:'心',minLevel:-1,weight:55,trend:'上焦头面',organ:'舌',syndrome:'虚'},
+{name:'舌尖红痛',zang:'心',minLevel:1,weight:60,trend:'上焦头面',organ:'舌',syndrome:'热'},
+{name:'怔忡',zang:'心',minLevel:-1,weight:70,trend:'中焦胸腹',organ:'全身',syndrome:'虚'},
+{name:'自汗',zang:'心',minLevel:-1,weight:60,trend:'全身',organ:'全身',syndrome:'虚'},
+{name:'畏寒肢冷',zang:'心',minLevel:-1,weight:65,trend:'全身',organ:'全身',syndrome:'寒'},
+{name:'五心烦热',zang:'心',minLevel:-1,weight:60,trend:'全身',organ:'全身',syndrome:'热'},
+{name:'潮热盗汗',zang:'心',minLevel:-1,weight:55,trend:'全身',organ:'全身',syndrome:'热'},
+{name:'两颧发红',zang:'心',minLevel:-1,weight:45,trend:'上焦头面',organ:'全身',syndrome:'热'},
+{name:'舌尖红绛',zang:'心',minLevel:1,weight:55,trend:'上焦头面',organ:'舌',syndrome:'热'},
+{name:'舌疮腐烂',zang:'心',minLevel:1,weight:50,trend:'上焦头面',organ:'舌',syndrome:'热'},
+{name:'狂躁谵语',zang:'心',minLevel:2,weight:45,trend:'全身',organ:'全身',syndrome:'实'},
+{name:'嗌干心痛',zang:'心',minLevel:-1,weight:55,trend:'上焦头面',organ:'全身',syndrome:'虚'},
+{name:'目黄',zang:'心',minLevel:1,weight:50,trend:'上焦头面',organ:'目',syndrome:'实'},
+{name:'掌中热痛',zang:'心',minLevel:1,weight:40,trend:'全身',organ:'全身',syndrome:'热'},
+{name:'口渴欲饮',zang:'心',minLevel:1,weight:55,trend:'全身',organ:'口',syndrome:'热'},
+{name:'神志痴呆',zang:'心',minLevel:-2,weight:40,trend:'全身',organ:'全身',syndrome:'虚'},
+{name:'食欲不振',zang:'脾',minLevel:-1,weight:80,trend:'中焦胸腹',organ:'口',syndrome:'虚'},
+{name:'腹胀便溏',zang:'脾',minLevel:-1,weight:75,trend:'下焦二阴',organ:'二阴',syndrome:'虚'},
+{name:'疲倦乏力',zang:'脾',minLevel:-1,weight:85,trend:'全身',organ:'全身',syndrome:'虚'},
+{name:'痰湿困重',zang:'脾',minLevel:-1,weight:60,trend:'全身',organ:'全身',syndrome:'实'},
+{name:'口淡无味',zang:'脾',minLevel:-1,weight:70,trend:'上焦头面',organ:'口',syndrome:'虚'},
+{name:'口甜口黏',zang:'脾',minLevel:1,weight:60,trend:'上焦头面',organ:'口',syndrome:'实'},
+{name:'口苦',zang:'肝',minLevel:1,weight:65,trend:'上焦头面',organ:'口',syndrome:'热'},
+{name:'口臭',zang:'脾',minLevel:1,weight:60,trend:'上焦头面',organ:'口',syndrome:'热'},
+{name:'口角流涎',zang:'脾',minLevel:-1,weight:55,trend:'上焦头面',organ:'口',syndrome:'虚'},
+{name:'唇干唇裂',zang:'脾',minLevel:-1,weight:55,trend:'上焦头面',organ:'口',syndrome:'热'},
+{name:'纳少腹胀',zang:'脾',minLevel:-1,weight:75,trend:'中焦胸腹',organ:'口',syndrome:'虚'},
+{name:'食后尤甚',zang:'脾',minLevel:-1,weight:65,trend:'中焦胸腹',organ:'口',syndrome:'虚'},
+{name:'少气懒言',zang:'脾',minLevel:-1,weight:70,trend:'全身',organ:'全身',syndrome:'虚'},
+{name:'面色萎黄',zang:'脾',minLevel:-1,weight:60,trend:'上焦头面',organ:'全身',syndrome:'虚'},
+{name:'腹痛喜温',zang:'脾',minLevel:-1,weight:65,trend:'中焦胸腹',organ:'全身',syndrome:'寒'},
+{name:'大便清稀',zang:'脾',minLevel:-1,weight:70,trend:'下焦二阴',organ:'二阴',syndrome:'寒'},
+{name:'肢体浮肿',zang:'脾',minLevel:-1,weight:60,trend:'全身',organ:'全身',syndrome:'寒'},
+{name:'小便不利',zang:'脾',minLevel:-1,weight:55,trend:'下焦二阴',organ:'二阴',syndrome:'寒'},
+{name:'口干唇燥',zang:'脾',minLevel:-1,weight:55,trend:'上焦头面',organ:'口',syndrome:'热'},
+{name:'饥不欲食',zang:'脾',minLevel:-1,weight:60,trend:'中焦胸腹',organ:'口',syndrome:'热'},
+{name:'脘腹痞闷',zang:'脾',minLevel:-1,weight:70,trend:'中焦胸腹',organ:'全身',syndrome:'实'},
+{name:'泛恶欲吐',zang:'脾',minLevel:-1,weight:60,trend:'中焦胸腹',organ:'口',syndrome:'寒'},
+{name:'头身困重',zang:'脾',minLevel:-1,weight:65,trend:'全身',organ:'全身',syndrome:'实'},
+{name:'面目发黄',zang:'脾',minLevel:1,weight:55,trend:'上焦头面',organ:'目',syndrome:'实'},
+{name:'肛门坠重',zang:'脾',minLevel:-2,weight:55,trend:'下焦二阴',organ:'二阴',syndrome:'虚'},
+{name:'久痢脱肛',zang:'脾',minLevel:-2,weight:45,trend:'下焦二阴',organ:'二阴',syndrome:'虚'},
+{name:'便血',zang:'脾',minLevel:-2,weight:50,trend:'下焦二阴',organ:'二阴',syndrome:'虚'},
+{name:'肌衄',zang:'脾',minLevel:-2,weight:45,trend:'全身',organ:'全身',syndrome:'虚'},
+{name:'舌本强',zang:'脾',minLevel:-1,weight:50,trend:'上焦头面',organ:'舌',syndrome:'实'},
+{name:'善噫',zang:'脾',minLevel:-1,weight:55,trend:'中焦胸腹',organ:'口',syndrome:'实'},
+{name:'咳嗽气喘',zang:'肺',minLevel:-1,weight:75,trend:'上焦头面',organ:'鼻',syndrome:'虚'},
+{name:'咽干鼻燥',zang:'肺',minLevel:-1,weight:70,trend:'上焦头面',organ:'鼻',syndrome:'热'},
+{name:'皮肤干燥',zang:'肺',minLevel:-1,weight:60,trend:'全身',organ:'全身',syndrome:'热'},
+{name:'易感冒',zang:'肺',minLevel:-1,weight:65,trend:'全身',organ:'全身',syndrome:'虚'},
+{name:'鼻塞',zang:'肺',minLevel:-1,weight:75,trend:'上焦头面',organ:'鼻',syndrome:'实'},
+{name:'流清涕',zang:'肺',minLevel:-1,weight:70,trend:'上焦头面',organ:'鼻',syndrome:'寒'},
+{name:'流黄涕',zang:'肺',minLevel:1,weight:65,trend:'上焦头面',organ:'鼻',syndrome:'热'},
+{name:'鼻干',zang:'肺',minLevel:-1,weight:65,trend:'上焦头面',organ:'鼻',syndrome:'热'},
+{name:'鼻衄',zang:'肺',minLevel:1,weight:55,trend:'上焦头面',organ:'鼻',syndrome:'热'},
+{name:'嗅觉减退',zang:'肺',minLevel:-1,weight:60,trend:'上焦头面',organ:'鼻',syndrome:'虚'},
+{name:'打喷嚏',zang:'肺',minLevel:-1,weight:55,trend:'上焦头面',organ:'鼻',syndrome:'实'},
+{name:'鼻痒',zang:'肺',minLevel:-1,weight:50,trend:'上焦头面',organ:'鼻',syndrome:'实'},
+{name:'咳喘无力',zang:'肺',minLevel:-1,weight:75,trend:'上焦头面',organ:'鼻',syndrome:'虚'},
+{name:'痰稀色白',zang:'肺',minLevel:-1,weight:65,trend:'上焦头面',organ:'鼻',syndrome:'寒'},
+{name:'声音低怯',zang:'肺',minLevel:-1,weight:55,trend:'上焦头面',organ:'口',syndrome:'虚'},
+{name:'畏风自汗',zang:'肺',minLevel:-1,weight:60,trend:'全身',organ:'全身',syndrome:'虚'},
+{name:'干咳无痰',zang:'肺',minLevel:-1,weight:70,trend:'上焦头面',organ:'鼻',syndrome:'热'},
+{name:'痰少黏稠',zang:'肺',minLevel:-1,weight:60,trend:'上焦头面',organ:'鼻',syndrome:'热'},
+{name:'声音嘶哑',zang:'肺',minLevel:-1,weight:50,trend:'上焦头面',organ:'口',syndrome:'热'},
+{name:'痰中带血',zang:'肺',minLevel:-1,weight:45,trend:'上焦头面',organ:'鼻',syndrome:'热'},
+{name:'恶寒发热',zang:'肺',minLevel:-1,weight:60,trend:'全身',organ:'全身',syndrome:'寒'},
+{name:'无汗',zang:'肺',minLevel:-1,weight:50,trend:'全身',organ:'全身',syndrome:'寒'},
+{name:'痰多黏白',zang:'肺',minLevel:-1,weight:65,trend:'上焦头面',organ:'鼻',syndrome:'实'},
+{name:'胸闷气喘',zang:'肺',minLevel:-1,weight:60,trend:'中焦胸腹',organ:'全身',syndrome:'实'},
+{name:'壮热口渴',zang:'肺',minLevel:1,weight:55,trend:'全身',organ:'口',syndrome:'热'},
+{name:'鼻翼煽动',zang:'肺',minLevel:2,weight:40,trend:'上焦头面',organ:'鼻',syndrome:'热'},
+{name:'缺盆中痛',zang:'肺',minLevel:-1,weight:45,trend:'上焦头面',organ:'全身',syndrome:'实'},
+{name:'小便数而欠',zang:'肺',minLevel:1,weight:40,trend:'下焦二阴',organ:'二阴',syndrome:'实'},
+{name:'咽喉肿痛',zang:'肺',minLevel:1,weight:55,trend:'上焦头面',organ:'口',syndrome:'热'},
+{name:'腰膝酸软',zang:'肾',minLevel:-1,weight:80,trend:'下焦二阴',organ:'全身',syndrome:'虚'},
+{name:'耳鸣耳聋',zang:'肾',minLevel:-1,weight:70,trend:'上焦头面',organ:'耳',syndrome:'虚'},
+{name:'脱发白发',zang:'肾',minLevel:-1,weight:65,trend:'上焦头面',organ:'全身',syndrome:'虚'},
+{name:'夜尿频多',zang:'肾',minLevel:-1,weight:60,trend:'下焦二阴',organ:'二阴',syndrome:'虚'},
+{name:'耳痒',zang:'肾',minLevel:-1,weight:50,trend:'上焦头面',organ:'耳',syndrome:'虚'},
+{name:'尿频',zang:'肾',minLevel:-1,weight:70,trend:'下焦二阴',organ:'二阴',syndrome:'虚'},
+{name:'尿急',zang:'肾',minLevel:-1,weight:65,trend:'下焦二阴',organ:'二阴',syndrome:'实'},
+{name:'尿失禁',zang:'肾',minLevel:-2,weight:60,trend:'下焦二阴',organ:'二阴',syndrome:'虚'},
+{name:'夜尿多',zang:'肾',minLevel:-1,weight:70,trend:'下焦二阴',organ:'二阴',syndrome:'虚'},
+{name:'二阴瘙痒',zang:'肾',minLevel:1,weight:55,trend:'下焦二阴',organ:'二阴',syndrome:'实'},
+{name:'腰膝冷痛',zang:'肾',minLevel:-1,weight:75,trend:'下焦二阴',organ:'全身',syndrome:'寒'},
+{name:'精神萎靡',zang:'肾',minLevel:-1,weight:65,trend:'全身',organ:'全身',syndrome:'寒'},
+{name:'面色黧黑',zang:'肾',minLevel:-2,weight:50,trend:'上焦头面',organ:'全身',syndrome:'寒'},
+{name:'阳痿',zang:'肾',minLevel:-1,weight:60,trend:'下焦二阴',organ:'二阴',syndrome:'寒'},
+{name:'五更泄泻',zang:'肾',minLevel:-1,weight:60,trend:'下焦二阴',organ:'二阴',syndrome:'寒'},
+{name:'腰以下肿',zang:'肾',minLevel:-1,weight:55,trend:'下焦二阴',organ:'全身',syndrome:'寒'},
+{name:'阳强易举',zang:'肾',minLevel:-1,weight:45,trend:'下焦二阴',organ:'二阴',syndrome:'热'},
+{name:'遗精',zang:'肾',minLevel:-1,weight:55,trend:'下焦二阴',organ:'二阴',syndrome:'虚'},
+{name:'经少经闭',zang:'肾',minLevel:-1,weight:50,trend:'下焦二阴',organ:'二阴',syndrome:'虚'},
+{name:'发脱齿摇',zang:'肾',minLevel:-1,weight:55,trend:'上焦头面',organ:'全身',syndrome:'虚'},
+{name:'健忘恍惚',zang:'肾',minLevel:-1,weight:60,trend:'全身',organ:'全身',syndrome:'虚'},
+{name:'动作迟缓',zang:'肾',minLevel:-1,weight:50,trend:'全身',organ:'全身',syndrome:'虚'},
+{name:'尿后余沥',zang:'肾',minLevel:-1,weight:55,trend:'下焦二阴',organ:'二阴',syndrome:'虚'},
+{name:'遗尿',zang:'肾',minLevel:-2,weight:45,trend:'下焦二阴',organ:'二阴',syndrome:'虚'},
+{name:'滑精早泄',zang:'肾',minLevel:-1,weight:50,trend:'下焦二阴',organ:'二阴',syndrome:'虚'},
+{name:'带下清稀',zang:'肾',minLevel:-1,weight:45,trend:'下焦二阴',organ:'二阴',syndrome:'虚'},
+{name:'呼多吸少',zang:'肾',minLevel:-1,weight:55,trend:'上焦头面',organ:'鼻',syndrome:'虚'},
+{name:'动则喘甚',zang:'肾',minLevel:-1,weight:60,trend:'上焦头面',organ:'鼻',syndrome:'虚'},
+{name:'面如漆柴',zang:'肾',minLevel:-2,weight:40,trend:'上焦头面',organ:'全身',syndrome:'虚'},
+{name:'善恐',zang:'肾',minLevel:-1,weight:50,trend:'全身',organ:'全身',syndrome:'虚'},
+{name:'口热舌干',zang:'肾',minLevel:-1,weight:55,trend:'上焦头面',organ:'舌',syndrome:'热'},
+{name:'痿厥嗜卧',zang:'肾',minLevel:-1,weight:55,trend:'全身',organ:'全身',syndrome:'虚'},
+{name:'便秘',zang:'大肠',minLevel:-1,weight:60,trend:'下焦二阴',organ:'二阴',syndrome:'热'},
+{name:'牙痛',zang:'胃',minLevel:1,weight:45,trend:'上焦头面',organ:'口',syndrome:'热'},
+];
+
+const COMBO_PATHOLOGIES=[{name:'风火相煽',zangs:['肝','心'],condition:e=>e.肝>=1&&e.心>=1,desc:'肝风心火相互煽动，易致头晕、失眠、口舌生疮、血压升高',symptoms:['头晕','失眠','口舌生疮','血压升高','烦躁']},{name:'肺胃热盛',zangs:['肺','脾'],condition:e=>e.肺>=1&&e.脾>=1,desc:'肺胃热盛，易致咽喉肿痛、咳嗽、口臭、便秘',symptoms:['咽喉肿痛','咳嗽','口臭','便秘']},{name:'心肾不交',zangs:['心','肾'],condition:e=>e.心>=1&&e.肾<=-1,desc:'心火上炎、肾水不足，水火不济，易致失眠、心悸、腰膝酸软、潮热盗汗',symptoms:['失眠','心悸','腰膝酸软','潮热盗汗']},{name:'木火刑金',zangs:['肝','肺'],condition:e=>e.肝>=1&&e.肺<=-1,desc:'肝火过旺反侮肺金，易致咳嗽、咯血、胸胁胀痛、急躁易怒',symptoms:['咳嗽','胸胁胀痛','急躁易怒']},{name:'土虚木乘',zangs:['脾','肝'],condition:e=>e.脾<=-1&&e.肝>=1,desc:'脾虚肝旺，肝木乘脾土，易致腹胀、腹痛、腹泻、情绪不稳',symptoms:['腹胀','腹痛','腹泻','情绪不稳']},{name:'水不涵木',zangs:['肾','肝'],condition:e=>e.肾<=-1&&(e.肝>=1||e.肝<=-1),desc:'肾阴不足不能滋养肝木，易致头晕、目涩、腰膝酸软、血压波动',symptoms:['头晕','目涩','腰膝酸软','血压波动']},{name:'气血两虚',zangs:['心','脾'],condition:e=>e.心<=-1&&e.脾<=-1,desc:'心脾两虚，气血不足，易致心悸、失眠、乏力、面色萎黄',symptoms:['心悸','失眠','乏力','面色萎黄']},{name:'痰湿内蕴',zangs:['脾','肺'],condition:e=>e.脾<=-1&&e.肺<=-1,desc:'脾肺气虚，水湿不化，痰湿内生，易致肥胖、痰多、胸闷、身重困倦',symptoms:['肥胖','痰多','胸闷','身重困倦']},{name:'阴虚火旺',zangs:['肾','心'],condition:e=>e.肾<=-2&&e.心>=1,desc:'肾阴大亏，虚火上炎，易致五心烦热、盗汗、口干、失眠',symptoms:['五心烦热','盗汗','口干','失眠']},{name:'肝郁脾虚',zangs:['肝','脾'],condition:e=>e.肝>=1&&e.脾<=-1,desc:'肝气郁结，横逆犯脾，易致胁胀、腹胀、纳差、便溏、情绪抑郁',symptoms:['胁胀','腹胀','纳差','便溏','情绪抑郁']},{name:'脾肾阳虚',zangs:['脾','肾'],condition:e=>e.脾<=-1&&e.肾<=-1,desc:'脾肾阳虚，阴寒内盛，易致畏寒、肢冷、腹泻、水肿、腰膝冷痛',symptoms:['畏寒','肢冷','腹泻','水肿','腰膝冷痛']},{name:'肝肾阴虚',zangs:['肝','肾'],condition:e=>e.肝<=-1&&e.肾<=-1,desc:'肝肾阴液亏虚，虚热内扰，易致眩晕、耳鸣、目涩、腰膝酸软、五心烦热',symptoms:['眩晕','耳鸣','目涩','腰膝酸软','五心烦热']}];
+
+const SHICHEN=[{name:'子时',time:'23-1点',jing:'胆经',advice:'熟睡养胆'},{name:'丑时',time:'1-3点',jing:'肝经',advice:'深睡养肝'},{name:'寅时',time:'3-5点',jing:'肺经',advice:'熟睡养肺'},{name:'卯时',time:'5-7点',jing:'大肠经',advice:'起床排便'},{name:'辰时',time:'7-9点',jing:'胃经',advice:'早餐养胃'},{name:'巳时',time:'9-11点',jing:'脾经',advice:'工作学习'},{name:'午时',time:'11-13点',jing:'心经',advice:'午餐小憩'},{name:'未时',time:'13-15点',jing:'小肠经',advice:'吸收营养'},{name:'申时',time:'15-17点',jing:'膀胱经',advice:'喝水运动'},{name:'酉时',time:'17-19点',jing:'肾经',advice:'晚餐补肾'},{name:'戌时',time:'19-21点',jing:'心包经',advice:'放松娱乐'},{name:'亥时',time:'21-23点',jing:'三焦经',advice:'准备入睡'}];
+
+const EMOTIONS={肝:{emoji:'😠',name:'怒伤肝',desc:'肝火旺者易急躁发怒，肝虚者易恐惧不安',sheng:'悲胜怒（😢胜😠）',advice:'听舒缓音乐、练习深呼吸、冥想打坐，避免情绪激动'},心:{emoji:'😊',name:'喜伤心',desc:'心火旺者易兴奋过度，心虚者易悲伤多虑',sheng:'恐胜喜（😱胜😊）',advice:'保持心态平和，避免过度兴奋和惊吓，规律作息'},脾:{emoji:'🤔',name:'思伤脾',desc:'脾虚者易思虑过度，导致食欲不振、腹胀便溏',sheng:'怒胜思（😠胜🤔）',advice:'适当运动发泄情绪，避免过度用脑，规律饮食'},肺:{emoji:'😢',name:'悲伤肺',desc:'肺虚者易悲伤抑郁，导致咳嗽、气短、声音低怯',sheng:'喜胜悲（😊胜😢）',advice:'多参加娱乐活动、社交聚会，唱歌可宣肺气'},肾:{emoji:'😱',name:'恐伤肾',desc:'肾虚者易恐惧不安，导致腰膝酸软、夜尿频多',sheng:'思胜恐（🤔胜😱）',advice:'理性分析问题、制定计划，艾灸涌泉、足浴补肾'}};
+
+const REFERENCES=[{classic:'素问·天元纪大论',quotes:[{text:'甲己之岁，土运统之；乙庚之岁，金运统之；丙辛之岁，水运统之；丁壬之岁，木运统之；戊癸之岁，火运统之。',usage:'中运推算规则'},{text:'夫五运阴阳者，天地之道也，万物之纲纪，变化之父母，生杀之本始，神明之府也。',usage:'五运总纲'}]},{classic:'素问·五运行大论',quotes:[{text:'气有余，则制己所胜而侮所不胜；其不及，则己所不胜侮而乘之，己所胜轻而侮之。',usage:'生克传变分析'}]},{classic:'素问·六微旨大论',quotes:[{text:'上下有位，左右有纪。故少阳之右，阳明治之；阳明之右，太阳治之；太阳之右，厥阴治之；厥阴之右，少阴治之；少阴之右，太阴治之；太阴之右，少阳治之。',usage:'司天在泉推算'}]},{classic:'素问·异法方宜论',quotes:[{text:'东方之域，天地之所始生也，鱼盐之地，海滨傍水……西方者，金玉之域，沙石之处，天地之所收引也……北方者，天地所闭藏之域也，其地高陵居，风寒冰冽……南方者，天地所长养，阳之所盛处也，其地下，水土弱，雾露之所聚也……中央者，其地平以湿，天地所以生万物也众。',usage:'五方地域属性'}]},{classic:'素问·上古天真论',quotes:[{text:'女子七岁，肾气盛，齿更发长……丈夫八岁，肾气实，发长齿更。',usage:'年龄生命节律'}]},{classic:'素问·宣明五气',quotes:[{text:'五脏所恶：心恶热，肺恶寒，肝恶风，脾恶湿，肾恶燥。',usage:'五脏喜恶'},{text:'五劳所伤：久视伤血，久卧伤气，久坐伤肉，久立伤骨，久行伤筋。',usage:'职业劳损'}]},{classic:'灵枢·经脉',quotes:[{text:'经脉者，所以能决死生，处百病，调虚实，不可不通。',usage:'经络总纲'}]},{classic:'素问·至真要大论',quotes:[{text:'诸风掉眩，皆属于肝；诸寒收引，皆属于肾；诸气膹郁，皆属于肺；诸湿肿满，皆属于脾；诸热瞀瘛，皆属于火。',usage:'病机十九条'}]},{classic:'素问·金匮真言论',quotes:[{text:'东方青色，入通于肝，开窍于目，藏精于肝……南方赤色，入通于心，开窍于耳，藏精于心……中央黄色，入通于脾，开窍于口，藏精于脾……西方白色，入通于肺，开窍于鼻，藏精于肺……北方黑色，入通于肾，开窍于二阴，藏精于肾。',usage:'五脏开窍理论'},{text:'东风生于春，病在肝，俞在颈项；南风生于夏，病在心，俞在胸胁；西风生于秋，病在肺，俞在肩背；北风生于冬，病在肾，俞在腰股；中央为土，病在脾，俞在脊。',usage:'五脏与季节、病位对应'}]},{classic:'灵枢·脉度',quotes:[{text:'肝气通于目，肝和则目能辨五色矣；心气通于舌，心和则舌能知五味矣；脾气通于口，脾和则口能知五谷矣；肺气通于鼻，肺和则鼻能知香臭矣；肾气通于耳，肾和则耳能闻五音矣。',usage:'五脏与官窍通气'},{text:'五脏不和则七窍不通，六腑不和则留结为痈。',usage:'官窍与脏腑关系'}]},{classic:'灵枢·经脉',quotes:[{text:'肺手太阴之脉，是动则病肺胀满，膨膨而喘咳，缺盆中痛，甚则交两手而瞀。所生病者，咳，上气，喘喝，烦心，胸满。',usage:'十二经脉病候示例'},{text:'经脉者，所以能决死生，处百病，调虚实，不可不通。',usage:'经脉总纲'},{text:'肝足厥阴之脉，是动则病腰痛不可以俯仰，丈夫㿉疝，妇人少腹肿，甚则嗌干，面尘，脱色。所生病者，胸满，呕逆，飧泄，狐疝，遗溺，闭癃。',usage:'肝经病候'}]},{classic:'素问·脏气法时论',quotes:[{text:'肝苦急，急食甘以缓之；心苦缓，急食酸以收之；脾苦湿，急食苦以燥之；肺苦气上逆，急食苦以泄之；肾苦燥，急食辛以润之。',usage:'五脏苦欲补泻'},{text:'邪气之客于身也，以胜相加，至其所生而愈，至其所不胜而甚，至于所生而持，自得其位而起。',usage:'五脏病传变规律'},{text:'肝病者，两胁下痛引少腹，令人善怒；虚则目䀮䀮无所见，耳无所闻，善恐，如人将捕之。',usage:'肝虚实证候'}]},{classic:'中藏经',quotes:[{text:'五脏六腑，虚实寒热，生死逆顺，皆见于形证脉气。',usage:'脏腑辨证总纲'},{text:'肝虚冷，则胁下坚痛，目盲，臂痛，发寒热如疟状，不欲食，妇人则月水不来而气急。',usage:'肝虚冷证'},{text:'心气虚，则梦刀杖火焰，赤衣红色之物，以恐为忧；心实热，则梦喜笑，恐畏，赤衣及火焰。',usage:'心虚实证候'}]},{classic:'脏腑标本寒热虚实用药式',quotes:[{text:'肝之本病：诸风眩运，僵仆强直，惊痫，两胁肿痛，胸胁满痛，呕血，小腹疝痛，痃瘕，女人经病。',usage:'肝病标本'},{text:'肝之标病：寒热疟，头痛吐涎，目赤面青，多怒，耳闭颊肿，筋挛卵缩，丈夫㿉疝，女人少腹肿痛阴病。',usage:'肝病标病'},{text:'虚实寒热各有标本，随证治之。有余则泻，不足则补。',usage:'治则总纲'}]}];
+
+
+// ========== 农历转换 (1900-2030) ==========
+const LUNAR_INFO=[0x04bd8,0x04ae0,0x0a570,0x054d5,0x0d260,0x0d950,0x16554,0x056a0,0x09ad0,0x055d2,0x04ae0,0x0a5b6,0x0a4d0,0x0d250,0x1d255,0x0b540,0x0d6a0,0x0ada2,0x095b0,0x14977,0x04970,0x0a4b0,0x0b4b5,0x06a50,0x06d40,0x1ab54,0x02b60,0x09570,0x052f2,0x04970,0x06566,0x0d4a0,0x0ea50,0x06e95,0x05ad0,0x02b60,0x186e3,0x092e0,0x1c8d7,0x0c950,0x0d4a0,0x1d8a6,0x0b550,0x056a0,0x1a5b4,0x025d0,0x092d0,0x0d2b2,0x0a950,0x0b557,0x06ca0,0x0b550,0x15355,0x04da0,0x0a5b0,0x14573,0x052b0,0x0a9a8,0x0e950,0x06aa0,0x0aea6,0x0ab50,0x04b60,0x0aae4,0x0a570,0x05260,0x0f263,0x0d950,0x05b57,0x056a0,0x096d0,0x04dd5,0x04ad0,0x0a4d0,0x0d4d4,0x0d250,0x0d558,0x0b540,0x0b6a0,0x195a6,0x095b0,0x049b0,0x0a974,0x0a4b0,0x0b27a,0x06a50,0x06d40,0x0af46,0x0ab60,0x09570,0x04af5,0x04970,0x064b0,0x074a3,0x0ea50,0x06b58,0x055c0,0x0ab60,0x096d5,0x092e0,0x0c960,0x0d954,0x0d4a0,0x0da50,0x07552,0x056a0,0x0abb7,0x025d0,0x092d0,0x0cab5,0x0a950,0x0b4a0,0x0baa4,0x0ad50,0x055d9,0x04ba0,0x0a5b0,0x15176,0x052b0,0x0a930,0x07954,0x06aa0,0x0ad50,0x05b52,0x04b60,0x0a6e6,0x0a4e0,0x0d260,0x0ea65,0x0d530,0x05aa0,0x076a3,0x096d0,0x04afb,0x04ad0,0x0a4d0,0x1d0b6,0x0d250,0x0d520,0x0dd45,0x0b5a0,0x056d0,0x055b2,0x049b0,0x0a577,0x0a4b0,0x0aa50,0x1b255,0x06d20,0x0ada0];
+function lYearDays(y){let sum=348;for(let i=0x8000;i>0x8;i>>=1)sum+=(LUNAR_INFO[y-1900]&i)?1:0;return sum+leapDays(y)}
+function leapDays(y){if(leapMonth(y))return(LUNAR_INFO[y-1900]&0x10000)?30:29;return 0}
+function leapMonth(y){return LUNAR_INFO[y-1900]&0xf}
+function monthDays(y,m){return(LUNAR_INFO[y-1900]&(0x10000>>m))?30:29}
+function solarToLunar(y,m,d){
+  if(y<1900||y>2030)return null;
+  const baseDate=new Date(1900,0,31);
+  const objDate=new Date(y,m-1,d);
+  let offset=Math.floor((objDate-baseDate)/86400000);
+  let i,temp=0;
+  for(i=1900;i<2031&&offset>0;i++){temp=lYearDays(i);offset-=temp}
+  if(offset<0){offset+=temp;i--}
+  const lunarYear=i;
+  const leap=leapMonth(i);
+  let isLeap=false;
+  for(i=1;i<13&&offset>0;i++){
+    if(leap>0&&i===leap+1&&!isLeap){--i;isLeap=true;temp=leapDays(lunarYear)}
+    else{temp=monthDays(lunarYear,i)}
+    if(isLeap&&i===leap+1)isLeap=false;
+    offset-=temp;
+  }
+  if(offset===0&&leap>0&&i===leap+1){if(isLeap){isLeap=false}else{isLeap=true;--i}}
+  if(offset<0){offset+=temp;--i}
+  const lunarMonth=i;
+  const lunarDay=offset+1;
+  return{year:lunarYear,month:lunarMonth,day:lunarDay,isLeap,monthName:(isLeap?'闰':'')+['正','二','三','四','五','六','七','八','九','十','冬','腊'][lunarMonth-1]+'月',dayName:lunarDay<=10?'初'+['一','二','三','四','五','六','七','八','九','十'][lunarDay-1]:lunarDay<=20?'十'+['一','二','三','四','五','六','七','八','九','十'][lunarDay-11]:lunarDay===21?'廿一':lunarDay===30?'三十':'廿'+['一','二','三','四','五','六','七','八','九'][lunarDay-21]};
+}
+function lunarToSolar(lY,lM,lD,isLeap){
+  if(lY<1900||lY>2030)return null;
+  let offset=0;
+  for(let i=1900;i<lY;i++)offset+=lYearDays(i);
+  const leap=leapMonth(lY);
+  for(let i=1;i<lM;i++){
+    offset+=monthDays(lY,i);
+    if(i===leap)offset+=leapDays(lY);
+  }
+  if(isLeap&&lM===leap+1)offset+=monthDays(lY,lM-1);
+  offset+=lD-1;
+  const baseDate=new Date(1900,0,31);
+  baseDate.setDate(baseDate.getDate()+offset);
+  return{year:baseDate.getFullYear(),month:baseDate.getMonth()+1,day:baseDate.getDate()};
+}
+
+// ========== 王琦9体质问卷数据 ==========
+const CONSTITUTION_QUESTIONS={
+  气虚质:[
+    {q:'您容易疲乏吗？',reverse:false},
+    {q:'您容易气短（呼吸短促，接不上气）吗？',reverse:false},
+    {q:'您容易心慌吗？',reverse:false},
+    {q:'您容易头晕或站起时晕眩吗？',reverse:false},
+    {q:'您比别人容易患感冒吗？',reverse:false},
+    {q:'您喜欢安静、懒得说话吗？',reverse:false},
+    {q:'您说话声音低弱无力吗？',reverse:false},
+    {q:'您活动量稍大就容易出虚汗吗？',reverse:false}
+  ],
+  阳虚质:[
+    {q:'您手脚发凉吗？',reverse:false},
+    {q:'您胃脘部、背部或腰膝部怕冷吗？',reverse:false},
+    {q:'您感到怕冷、衣服比别人穿得多吗？',reverse:false},
+    {q:'您比一般人耐受不了寒冷吗？',reverse:false},
+    {q:'您比别人容易患感冒吗？',reverse:false},
+    {q:'您吃（喝）凉的东西会感到不舒服或者怕吃（喝）凉东西吗？',reverse:false},
+    {q:'您受凉或吃（喝）凉的东西后，容易腹泻（拉肚子）吗？',reverse:false}
+  ],
+  阴虚质:[
+    {q:'您感到手脚心发热吗？',reverse:false},
+    {q:'您感觉身体、脸上发热吗？',reverse:false},
+    {q:'您皮肤或口唇干吗？',reverse:false},
+    {q:'您口唇的颜色比一般人红吗？',reverse:false},
+    {q:'您容易便秘或大便干燥吗？',reverse:false},
+    {q:'您面部两颧潮红或偏红吗？',reverse:false},
+    {q:'您感到眼睛干涩吗？',reverse:false},
+    {q:'您感到口干咽燥、总想喝水吗？',reverse:false}
+  ],
+  痰湿质:[
+    {q:'您感到胸闷或腹部胀满吗？',reverse:false},
+    {q:'您感到身体沉重不轻松或不爽快吗？',reverse:false},
+    {q:'您腹部肥满松软吗？',reverse:false},
+    {q:'您有额部油脂分泌多的现象吗？',reverse:false},
+    {q:'您上眼睑比别人肿（仍轻微隆起的现象）吗？',reverse:false},
+    {q:'您嘴里有黏黏的感觉吗？',reverse:false},
+    {q:'您平时痰多，特别是咽喉部总感到有痰堵着吗？',reverse:false},
+    {q:'您舌苔厚腻或有舌苔厚厚的感觉吗？',reverse:false}
+  ],
+  湿热质:[
+    {q:'您面部或鼻部有油腻感或者油亮发光吗？',reverse:false},
+    {q:'您容易生痤疮或疮疖吗？',reverse:false},
+    {q:'您感到口苦或嘴里有异味吗？',reverse:false},
+    {q:'您大便有黏滞不爽、有解不尽的感觉吗？',reverse:false},
+    {q:'您小便时尿道有发热感、尿色浓（深）吗？',reverse:false},
+    {q:'您带下色黄（白带颜色发黄）吗？（女性回答）',reverse:false},
+    {q:'您的阴囊部位潮湿吗？（男性回答）',reverse:false}
+  ],
+  血瘀质:[
+    {q:'您的皮肤在不知不觉中会出现青紫瘀斑（皮下出血）吗？',reverse:false},
+    {q:'您两颧部有细微红丝吗？',reverse:false},
+    {q:'您身体上有哪里疼痛吗？',reverse:false},
+    {q:'您面色晦黯或容易出现褐斑吗？',reverse:false},
+    {q:'您容易有黑眼圈吗？',reverse:false},
+    {q:'您容易忘事（健忘）吗？',reverse:false},
+    {q:'您口唇颜色偏黯吗？',reverse:false}
+  ],
+  气郁质:[
+    {q:'您感到闷闷不乐、情绪低沉吗？',reverse:false},
+    {q:'您容易精神紧张、焦虑不安吗？',reverse:false},
+    {q:'您多愁善感、感情脆弱吗？',reverse:false},
+    {q:'您容易感到害怕或受到惊吓吗？',reverse:false},
+    {q:'您胁肋部或乳房胀痛吗？',reverse:false},
+    {q:'您无缘无故叹气吗？',reverse:false},
+    {q:'您咽喉部有异物感，且吐之不出、咽之不下吗？',reverse:false}
+  ],
+  特禀质:[
+    {q:'您没有感冒时也会打喷嚏吗？',reverse:false},
+    {q:'您没有感冒时也会鼻塞、流鼻涕吗？',reverse:false},
+    {q:'您有因过敏而起荨麻疹（风团、风疹块、风疙瘩）吗？',reverse:false},
+    {q:'您的皮肤一抓就红，并出现抓痕吗？',reverse:false},
+    {q:'您因为过敏而出现紫癜（皮下出血）吗？',reverse:false},
+    {q:'您有哮喘（过敏性哮喘）吗？',reverse:false},
+    {q:'您对食物、药物、气味或花粉等过敏吗？',reverse:false}
+  ],
+  平和质:[
+    {q:'您精力充沛吗？',reverse:true},
+    {q:'您容易疲乏吗？',reverse:false},
+    {q:'您说话声音低弱无力吗？',reverse:false},
+    {q:'您感到闷闷不乐、情绪低沉吗？',reverse:false},
+    {q:'您比一般人耐受不了寒冷吗？',reverse:false},
+    {q:'您能适应外界自然和社会环境的变化吗？',reverse:true},
+    {q:'您容易失眠吗？',reverse:false},
+    {q:'您容易忘事（健忘）吗？',reverse:false}
+  ]
+};
+const QUESTION_OPTIONS=[{label:'没有',score:1},{label:'很少',score:2},{label:'有时',score:3},{label:'经常',score:4},{label:'总是',score:5}];
+
+// ========== 复合证型数据 ==========
+const SYNDROME_PATTERNS=[
+  {name:'肝郁脾虚证',type:'复合证型',zangs:['肝','脾'],condition:e=>e.肝>=1&&e.脾<=-1,desc:'肝气郁结，横逆犯脾，脾失健运。表现为胁肋胀痛、腹胀纳差、便溏不爽、情志抑郁、善太息。',treatment:'疏肝健脾，理气和胃',formula:'参考：逍遥散、柴胡疏肝散合四君子汤',symptoms:['胁肋胀痛','腹胀纳差','便溏不爽','情志抑郁','善太息']},
+  {name:'心脾两虚证',type:'复合证型',zangs:['心','脾'],condition:e=>e.心<=-1&&e.脾<=-1,desc:'心血不足，脾气虚弱，气血生化乏源。表现为心悸怔忡、失眠多梦、健忘、食少、腹胀、大便稀溏、倦怠乏力。',treatment:'益气补血，健脾养心',formula:'参考：归脾汤、人参养荣汤',symptoms:['心悸怔忡','失眠多梦','健忘','食少腹胀','倦怠乏力']},
+  {name:'肝肾阴虚证',type:'复合证型',zangs:['肝','肾'],condition:e=>e.肝<=-1&&e.肾<=-1,desc:'肝肾阴液亏虚，虚热内扰。表现为头晕目眩、目干、视物昏花、齿摇发脱、耳鸣、五心烦热、失眠多梦。',treatment:'滋补肝肾，养阴清热',formula:'参考：杞菊地黄丸、一贯煎',symptoms:['头晕目眩','目干涩','耳鸣','五心烦热','腰膝酸软']},
+  {name:'脾肾阳虚证',type:'复合证型',zangs:['脾','肾'],condition:e=>e.脾<=-1&&e.肾<=-1,desc:'脾肾阳气亏虚，阴寒内盛。表现为畏寒肢冷、面色㿠白、腰膝酸软、腹中冷痛、久泻久痢、五更泄泻、小便不利。',treatment:'温补脾肾，散寒止泻',formula:'参考：附子理中丸、四神丸、金匮肾气丸',symptoms:['畏寒肢冷','腰膝冷痛','五更泄泻','腹中冷痛','小便清长']},
+  {name:'肺脾气虚证',type:'复合证型',zangs:['肺','脾'],condition:e=>e.肺<=-1&&e.脾<=-1,desc:'肺脾两脏气虚，功能减退。表现为食欲不振、腹胀便溏、久咳不止、气短而喘、咯痰清稀、面白无华、少气懒言。',treatment:'补肺健脾，益气化痰',formula:'参考：六君子汤、参苓白术散',symptoms:['久咳气短','咯痰清稀','食欲不振','腹胀便溏','少气懒言']},
+  {name:'阴虚火旺证',type:'复合证型',zangs:['肾','心'],condition:e=>e.肾<=-2&&e.心>=1,desc:'肾阴亏虚，虚火上炎，心肾不交。表现为五心烦热、潮热盗汗、口干咽燥、头晕耳鸣、失眠多梦、遗精早泄。',treatment:'滋阴降火，交通心肾',formula:'参考：知柏地黄丸、天王补心丹',symptoms:['五心烦热','潮热盗汗','口干咽燥','失眠多梦','头晕耳鸣']},
+  {name:'气滞血瘀证',type:'复合证型',zangs:['肝','心'],condition:e=>e.肝>=1&&(e.心<=-1||e.肝>=2),desc:'气机郁滞，血行不畅，瘀阻脉络。表现为胸胁胀闷、走窜疼痛、急躁易怒、胁下痞块、刺痛拒按、面色晦暗、口唇紫暗。',treatment:'疏肝理气，活血化瘀',formula:'参考：血府逐瘀汤、柴胡疏肝散合桃红四物汤',symptoms:['胸胁刺痛','面色晦暗','口唇紫暗','急躁易怒','胁下痞块']},
+  {name:'痰湿内阻证',type:'复合证型',zangs:['脾','肺'],condition:e=>e.脾<=-1&&e.肺<=-1,desc:'脾失健运，肺失宣降，水湿内停，聚湿生痰。表现为形体肥胖、腹部肥满、胸闷痰多、头晕目眩、身重困倦、口黏苔腻。',treatment:'健脾燥湿，化痰降浊',formula:'参考：二陈汤、温胆汤、苍附导痰丸',symptoms:['形体肥胖','胸闷痰多','身重困倦','头晕目眩','口黏苔腻']},
+  {name:'湿热蕴结证',type:'复合证型',zangs:['脾','肝'],condition:e=>e.脾>=1&&e.肝>=1,desc:'湿热内蕴，熏蒸肝胆，阻滞脾胃。表现为身热不扬、头身困重、胸脘痞闷、口苦口黏、大便黏滞、小便短黄、舌红苔黄腻。',treatment:'清热利湿，疏肝利胆',formula:'参考：龙胆泻肝汤、茵陈蒿汤、三仁汤',symptoms:['口苦口黏','身热不扬','大便黏滞','小便短黄','舌红苔黄腻']},
+  {name:'气阴两虚证',type:'复合证型',zangs:['心','肾'],condition:e=>e.心<=-1&&e.肾<=-1,desc:'元气不足，阴液亏虚，气阴两伤。表现为神疲乏力、气短懒言、自汗盗汗、口干咽燥、五心烦热、心悸失眠、舌红少苔。',treatment:'益气养阴，生津止渴',formula:'参考：生脉散、玉屏风散合六味地黄丸',symptoms:['神疲乏力','气短懒言','自汗盗汗','口干咽燥','五心烦热']}
+];
+
+// ========== 五运六气精细化数据 ==========
+const ZHU_QI=[
+  {name:'初之气',qi:'厥阴风木',period:'大寒-春分',zang:'肝',desc:'风气主事，万物始生'},
+  {name:'二之气',qi:'少阴君火',period:'春分-小满',zang:'心',desc:'火气主事，万物繁茂'},
+  {name:'三之气',qi:'少阳相火',period:'小满-大暑',zang:'心/心包',desc:'暑气主事，炎热极盛'},
+  {name:'四之气',qi:'太阴湿土',period:'大暑-秋分',zang:'脾',desc:'湿气主事，长夏养长'},
+  {name:'五之气',qi:'阳明燥金',period:'秋分-小雪',zang:'肺',desc:'燥气主事，万物收敛'},
+  {name:'终之气',qi:'太阳寒水',period:'小雪-大寒',zang:'肾',desc:'寒气主事，万物闭藏'}
+];
+const KE_QI_ORDER=['厥阴风木','少阴君火','太阴湿土','少阳相火','阳明燥金','太阳寒水'];
+const SHICHEN_ZANG={子:'胆',丑:'肝',寅:'肺',卯:'大肠',辰:'胃',巳:'脾',午:'心',未:'小肠',申:'膀胱',酉:'肾',戌:'心包',亥:'三焦'};
+const SHICHEN_ZANG_MAIN={子:'肾',丑:'肝',寅:'肺',卯:'肺',辰:'脾',巳:'脾',午:'心',未:'心',申:'膀胱',酉:'肾',戌:'心包',亥:'三焦'};
+
+// ========== 推演逻辑 ==========
+function getGanZhi(year){const gi=(year-4)%10;const zi=(year-4)%12;return{gan:TIAN_GAN[gi],zhi:DI_ZHI[zi],ganIndex:gi,zhiIndex:zi}}
+function getZhongYun(gan){const wx=GAN_WUXING[gan];const yy=GAN_YINYANG[gan];const z=ZANG_WUXING[wx];const tg=yy==='阳';return{wuxing:wx,zang:z,isTaiGuo:tg,value:tg?2:-2,desc:`${gan}为${yy}干，属${wx}，${z}运${tg?'太过':'不及'}`}}
+function getSiTianZaiQuan(zhi){const st=ZHI_LIUQI[zhi];const stwx=LIUQI_WUXING[st];const stz=ZANG_WUXING[stwx];const zi=DI_ZHI.indexOf(zhi);const zqz=DI_ZHI[(zi+6)%12];const zq=ZHI_LIUQI[zqz];const zqwx=LIUQI_WUXING[zq];const zqzang=ZANG_WUXING[zqwx];return{siTian:st,siTianZang:stz,zaiQuan:zq,zaiQuanZang:zqzang,desc:`${zhi}年司天为${st}（${stz}），在泉为${zq}（${zqzang}）`}}
+function getDirection(p){return PROVINCES[p]?.direction||'中'}
+
+function calcZangEnergy(input){
+  const {birthYear,birthMonth,birthDay,birthHour,birthProvince,currentProvince,occupation,calendarType}=input;
+  const ganzhi=getGanZhi(birthYear);
+  const zhongyun=getZhongYun(ganzhi.gan);
+  const sitian=getSiTianZaiQuan(ganzhi.zhi);
+  const birthDir=getDirection(birthProvince);
+  const currentDir=getDirection(currentProvince);
+  const occ=OCCUPATION_EFFECTS[occupation];
+  const energy={肝:0,心:0,脾:0,肺:0,肾:0};
+  const details={肝:[],心:[],脾:[],肺:[],肾:[]};
+  energy[zhongyun.zang]+=zhongyun.value;
+  details[zhongyun.zang].push(`中运${zhongyun.zang}${zhongyun.isTaiGuo?'太过':'不及'}(${zhongyun.value>0?'+':''}${zhongyun.value})`);
+  energy[sitian.siTianZang]+=1;details[sitian.siTianZang].push(`司天${sitian.siTian}(+1)`);
+  energy[sitian.zaiQuanZang]+=1;details[sitian.zaiQuanZang].push(`在泉${sitian.zaiQuan}(+1)`);
+  const zangs=['肝','心','脾','肺','肾'];
+  zangs.forEach(z=>{
+    const wx=WUXING_ZANG[z];
+    const motherWX=Object.keys(SHENG).find(k=>SHENG[k]===wx);
+    const motherZ=ZANG_WUXING[motherWX];
+    const keMeWX=Object.keys(KE).find(k=>KE[k]===wx);
+    const keMeZ=ZANG_WUXING[keMeWX];
+    const meKeZ=ZANG_WUXING[KE[wx]];
+    if(energy[motherZ]>=1){energy[z]+=1;details[z].push(`母脏${motherZ}偏旺，相生(+1)`)}
+    if(energy[motherZ]<=-1){energy[z]-=1;details[z].push(`母脏${motherZ}偏弱，生源不足(-1)`)}
+    if(energy[keMeZ]>=1){energy[z]-=1;details[z].push(`克我之${keMeZ}偏旺，相乘(-1)`)}
+    if(energy[meKeZ]<=-1){energy[z]+=1;details[z].push(`我克之${meKeZ}偏弱，反侮(+1)`)}
+  });
+  const dirZangMap={东:'肝',南:'心',中:'脾',西:'肺',北:'肾'};
+  const birthZang=dirZangMap[birthDir];
+  energy[birthZang]+=1;details[birthZang].push(`出生地属${birthDir}方，${birthZang}气得地之助(+1)`);
+  const congenital={...energy};
+  const currentZang=dirZangMap[currentDir];
+  if(currentDir!==birthDir){energy[currentZang]+=1;details[currentZang].push(`现居地属${currentDir}方，${currentZang}气受环境影响(+1)`)}
+  if(occ){zangs.forEach(z=>{if(occ.effects[z]!==0){energy[z]+=occ.effects[z];details[z].push(`职业${occ.name}，${z}${occ.effects[z]>0?'受益':'受损'}(${occ.effects[z]>0?'+':''}${occ.effects[z]})`)}})}
+  const age=input.currentAge;const isMale=input.gender==='male';
+  if(isMale){if(age>=40){energy.肾-=1;details.肾.push('年逾四十，肾气渐衰(-1)')}if(age>=48){energy.肝-=1;details.肝.push('年近五十，肝气始衰(-1)')}if(age>=56){energy.心-=1;details.心.push('年过八八，心气始衰(-1)')}}
+  else{if(age>=35){energy.脾-=1;details.脾.push('五七阳明脉衰，脾气始弱(-1)')}if(age>=42){energy.肝-=1;details.肝.push('六七三阳脉衰，肝气始弱(-1)')}if(age>=49){energy.肾-=1;details.肾.push('七七任脉虚，肾气衰(-1)')}}
+  // 五运六气精细化（填写了月日时才执行）
+  let detailedLuckQi=null;
+  if(birthMonth&&birthDay){
+    detailedLuckQi=calcDetailedLuckQi(birthYear,birthMonth,birthDay,birthHour,calendarType||'solar');
+    if(detailedLuckQi){
+      // 主气修正
+      if(detailedLuckQi.zhuQiZang&&detailedLuckQi.zhuQiZang!=='心/心包'){
+        energy[detailedLuckQi.zhuQiZang]+=detailedLuckQi.zhuQiAdjust;
+        details[detailedLuckQi.zhuQiZang].push(`主气${detailedLuckQi.zhuQi}（${detailedLuckQi.zhuQiZang}）${detailedLuckQi.zhuQiAdjust>0?'+':''}${detailedLuckQi.zhuQiAdjust}`);
+      }
+      // 客气修正
+      if(detailedLuckQi.keQiZang&&detailedLuckQi.keQiZang!=='心/心包'){
+        energy[detailedLuckQi.keQiZang]+=detailedLuckQi.keQiAdjust;
+        details[detailedLuckQi.keQiZang].push(`客气${detailedLuckQi.keQi}（${detailedLuckQi.keQiZang}）${detailedLuckQi.keQiAdjust>0?'+':''}${detailedLuckQi.keQiAdjust}`);
+      }
+      // 出生时辰子午流注禀赋
+      if(detailedLuckQi.shichenZang&&detailedLuckQi.shichenZang!=='心包'&&detailedLuckQi.shichenZang!=='三焦'&&detailedLuckQi.shichenZang!=='胆'&&detailedLuckQi.shichenZang!=='胃'&&detailedLuckQi.shichenZang!=='大肠'&&detailedLuckQi.shichenZang!=='小肠'&&detailedLuckQi.shichenZang!=='膀胱'){
+        energy[detailedLuckQi.shichenZang]+=1;
+        details[detailedLuckQi.shichenZang].push(`出生${detailedLuckQi.shichen}时，${detailedLuckQi.shichenZang}经当令禀赋(+1)`);
+      }
+    }
+  }
+  zangs.forEach(z=>{energy[z]=Math.max(-3,Math.min(3,energy[z]))});
+  return{energy,congenital,details,ganzhi,zhongyun,sitian,birthDir,currentDir,occ,detailedLuckQi};
+}
+
+function judgeConstitution(energy){
+  const zangs=['肝','心','脾','肺','肾'];
+  if(zangs.every(z=>energy[z]>=-1&&energy[z]<=1))return CONSTITUTIONS[0];
+  let best=null,bestScore=0;
+  CONSTITUTIONS.slice(1).forEach(c=>{
+    let score=0;
+    if(c.name==='气虚质'&&(energy.脾<=-2||energy.肺<=-2))score=80;
+    if(c.name==='阳虚质'&&energy.肾<=-2&&energy.心<=0)score=75;
+    if(c.name==='阴虚质'&&energy.肾<=-2&&energy.心>=1)score=80;
+    if(c.name==='痰湿质'&&energy.脾<=-1&&energy.肺<=-1)score=70;
+    if(c.name==='湿热质'&&energy.脾>=1&&energy.肝>=1)score=65;
+    if(c.name==='血瘀质'&&(energy.心<=-1||energy.肝>=1))score=60;
+    if(c.name==='气郁质'&&(energy.肝<=-1||energy.肝>=2))score=75;
+    if(c.name==='特禀质'&&(energy.肺<=-2||energy.肾<=-2))score=70;
+    if(score>bestScore){bestScore=score;best=c}
+  });
+  return best||CONSTITUTIONS[0];
+}
+
+function calcSymptoms(energy){
+  return SYMPTOMS.map(s=>{
+    let score=0;const ze=energy[s.zang];
+    if(ze!==undefined){
+      if(s.minLevel>0&&ze>=s.minLevel)score=s.weight+Math.abs(ze)*5;
+      if(s.minLevel<0&&ze<=s.minLevel)score=s.weight+Math.abs(ze)*5;
+    }
+    if(s.zang==='胃'&&energy.脾>=1&&energy.心>=1)score+=20;
+    if(s.zang==='大肠'&&energy.肺<=-1&&energy.脾<=-1)score+=15;
+    return{...s,score};
+  }).filter(s=>s.score>30).sort((a,b)=>b.score-a.score).slice(0,8);
+}
+
+function calcComboPathologies(energy){return COMBO_PATHOLOGIES.filter(p=>p.condition(energy))}
+
+// 五运六气精细化计算
+function calcDetailedLuckQi(year,month,day,hour,calendarType){
+  try{
+    // 如果是农历，先转阳历
+    let solarMonth=month,solarDay=day;
+    if(calendarType==='lunar'){
+      const solar=lunarToSolar(year,month,day,false);
+      if(solar){solarMonth=solar.month;solarDay=solar.day}
+    }
+    // 确定主气（二十四节气划分）
+    const solarTerms=[
+      {month:1,day:20,qi:'太阳寒水',zang:'肾'},{month:2,day:4,qi:'厥阴风木',zang:'肝'},
+      {month:3,day:21,qi:'少阴君火',zang:'心'},{month:5,day:21,qi:'少阳相火',zang:'心/心包'},
+      {month:7,day:23,qi:'太阴湿土',zang:'脾'},{month:9,day:23,qi:'阳明燥金',zang:'肺'},
+      {month:11,day:22,qi:'太阳寒水',zang:'肾'}
+    ];
+    let zhuQi='厥阴风木',zhuQiZang='肝';
+    for(let i=solarTerms.length-1;i>=0;i--){
+      if(solarMonth>solarTerms[i].month||(solarMonth===solarTerms[i].month&&solarDay>=solarTerms[i].day)){
+        zhuQi=solarTerms[i].qi;zhuQiZang=solarTerms[i].zang;break;
+      }
+    }
+    // 确定客气（司天在泉+左右间气）
+    const ganzhi=getGanZhi(year);
+    const siTianQi=ZHI_LIUQI[ganzhi.zhi];
+    const siTianIdx=KE_QI_ORDER.indexOf(siTianQi);
+    const zaiQuanIdx=(siTianIdx+3)%6;
+    // 三之气为司天，六之气为在泉
+    let keQi=siTianQi,keQiZang=ZANG_WUXING[LIUQI_WUXING[siTianQi]];
+    const qiStep=Math.floor((solarMonth-1)/2);
+    if(qiStep===2){keQi=siTianQi;keQiZang=ZANG_WUXING[LIUQI_WUXING[siTianQi]]}
+    else if(qiStep===5){keQi=KE_QI_ORDER[zaiQuanIdx];keQiZang=ZANG_WUXING[LIUQI_WUXING[KE_QI_ORDER[zaiQuanIdx]]]}
+    else{
+      const offset=qiStep<2?qiStep+4:qiStep-3;
+      const keIdx=(siTianIdx+offset)%6;
+      keQi=KE_QI_ORDER[keIdx];keQiZang=ZANG_WUXING[LIUQI_WUXING[keQi]];
+    }
+    // 客主加临顺逆判断
+    const keWuxing=LIUQI_WUXING[keQi];
+    const zhuWuxing=LIUQI_WUXING[zhuQi];
+    let shunNi='顺';
+    if(keWuxing===zhuWuxing)shunNi='同（天符）';
+    else if(SHENG[keWuxing]===zhuWuxing)shunNi='顺（客生主）';
+    else if(KE[keWuxing]===zhuWuxing)shunNi='逆（客克主）';
+    else if(SHENG[zhuWuxing]===keWuxing)shunNi='逆（主生客）';
+    // 运气同化判断
+    const zhongyunWuxing=GAN_WUXING[ganzhi.gan];
+    let tongHua='';
+    if(zhongyunWuxing===LIUQI_WUXING[siTianQi])tongHua='天符';
+    if(zhongyunWuxing===LIUQI_WUXING[KE_QI_ORDER[zaiQuanIdx]])tongHua=tongHua?'同天符':'岁会（在泉）';
+    // 主气客气能量修正
+    const zhuQiAdjust=shunNi.includes('顺')||shunNi.includes('同')?1:-1;
+    const keQiAdjust=shunNi.includes('逆')?-1:1;
+    // 出生时辰
+    let shichen='',shichenZang='';
+    if(hour){
+      shichen=hour;
+      shichenZang=SHICHEN_ZANG_MAIN[hour]||'';
+    }
+    return{zhuQi,zhuQiZang,keQi,keQiZang,shunNi,tongHua,zhuQiAdjust,keQiAdjust,shichen,shichenZang,solarMonth,solarDay};
+  }catch(e){return null}
+}
+
+// 体质问卷评分
+function calcConstitutionScore(answers){
+  const scores={};
+  Object.keys(CONSTITUTION_QUESTIONS).forEach(type=>{
+    const questions=CONSTITUTION_QUESTIONS[type];
+    let total=0,count=0;
+    questions.forEach((q,idx)=>{
+      const key=type+'_'+idx;
+      if(answers[key]!==undefined&&answers[key]!==null){
+        let score=parseInt(answers[key]);
+        if(q.reverse)score=6-score;
+        total+=score;count++;
+      }
+    });
+    if(count>0){
+      const rawScore=total/count;
+      const convertedScore=((rawScore-1)/4)*100;
+      scores[type]={raw:rawScore,converted:Math.round(convertedScore),count:count};
+    }
+  });
+  // 判断体质类型
+  let mainType='平和质',mainScore=0;
+  Object.keys(scores).forEach(type=>{
+    if(type!=='平和质'&&scores[type].converted>mainScore){
+      mainScore=scores[type].converted;mainType=type;
+    }
+  });
+  // 兼夹体质
+  const secondary=[];
+  Object.keys(scores).forEach(type=>{
+    if(type!=='平和质'&&type!==mainType&&scores[type].converted>=30){
+      secondary.push({type,score:scores[type].converted});
+    }
+  });
+  secondary.sort((a,b)=>b.score-a.score);
+  return{scores,mainType,mainScore,secondary:secondary.slice(0,2)};
+}
+
+// 复合证型推断
+function calcSyndromePatterns(energy,constitutionResult){
+  const patterns=SYNDROME_PATTERNS.filter(p=>p.condition(energy));
+  // 结合体质问卷结果调整
+  if(constitutionResult&&constitutionResult.mainType){
+    const typeMap={'气虚质':['肺脾气虚证','心脾两虚证'],'阳虚质':['脾肾阳虚证'],'阴虚质':['肝肾阴虚证','阴虚火旺证'],'痰湿质':['痰湿内阻证'],'湿热质':['湿热蕴结证'],'血瘀质':['气滞血瘀证'],'气郁质':['肝郁脾虚证'],'特禀质':['肺脾气虚证']};
+    const related=typeMap[constitutionResult.mainType]||[];
+    related.forEach(name=>{
+      if(!patterns.find(p=>p.name===name)){
+        const p=SYNDROME_PATTERNS.find(x=>x.name===name);
+        if(p)patterns.push({...p,fromConstitution:true});
+      }
+    });
+  }
+  return patterns;
+}
+
+function recommendExercises(energy,occupation,age){
+  const zangs=['肝','心','脾','肺','肾'];
+  const weakZangs=zangs.filter(z=>energy[z]<=-1).sort((a,b)=>energy[a]-energy[b]);
+  const strongZangs=zangs.filter(z=>energy[z]>=1).sort((a,b)=>energy[b]-energy[a]);
+  const scored=EXERCISES.map(ex=>{
+    let score=0;
+    ex.benefitZang.forEach(z=>{if(weakZangs.includes(z))score+=30;if(strongZangs.includes(z)&&ex.type==='身心修炼')score+=20});
+    if(['it','design','finance','manager','student','freelance'].includes(occupation)&&['八段锦','平板支撑','瑜伽'].includes(ex.name))score+=15;
+    if(age>=50&&['太极拳','游泳','八段锦'].includes(ex.name))score+=15;
+    if(age>=50&&['深蹲','骑行'].includes(ex.name))score-=10;
+    return{...ex,score};
+  }).sort((a,b)=>b.score-a.score);
+  const selected=[];const types=new Set();
+  for(const ex of scored){if(selected.length>=3)break;if(!types.has(ex.type)||selected.length<2){selected.push(ex);types.add(ex.type)}}
+  return selected;
+}
+
+function getAgeRhythm(gender,age){
+  const isMale=gender==='male';
+  let current='',next='';
+  if(isMale){
+    if(age<8){current='肾气初生，齿更发长';next='八岁后肾气实，发长齿更'}
+    else if(age<16){current='肾气盛，天癸至，精气溢泻';next='十六岁后肾气平均，筋骨劲强'}
+    else if(age<24){current='肾气平均，筋骨劲强，真牙生';next='二十四岁后身体盛壮，肌肉满壮'}
+    else if(age<32){current='身体盛壮，肌肉满壮，精力充沛';next='三十二岁后筋骨隆盛，肌肉满壮'}
+    else if(age<40){current='筋骨隆盛，肌肉满壮，精力充沛';next='四十岁后肾气渐衰，发堕齿槁'}
+    else if(age<48){current='肾气渐衰，发堕齿槁，阳气始衰';next='四十八岁后阳气衰竭于上，面焦发鬓颁白'}
+    else if(age<56){current='阳气衰于上，面焦发鬓白，肝气始衰';next='五十六岁后肝气衰，筋不能动，天癸竭'}
+    else if(age<64){current='肝气衰，筋不能动，天癸竭，精少';next='六十四岁后五脏皆衰，筋骨懈惰，齿发去'}
+    else{current='五脏皆衰，筋骨懈惰，天癸已竭';next='注重养生，颐养天年'}
+  }else{
+    if(age<7){current='肾气始盛，齿更发长';next='七岁后肾气盛，齿更发长'}
+    else if(age<14){current='肾气盛，天癸至，任脉通，月事以时下';next='十四岁后肾气平均，故真牙生而长极'}
+    else if(age<21){current='肾气平均，真牙生而长极，筋骨坚';next='二十一岁后身体盛壮，发长极'}
+    else if(age<28){current='身体盛壮，发长极，精力充沛';next='二十八岁后筋骨坚，发长极，身体盛壮'}
+    else if(age<35){current='筋骨坚，发长极，身体盛壮';next='三十五岁后阳明脉衰，面始焦，发始堕'}
+    else if(age<42){current='阳明脉衰，面始焦，发始堕';next='四十二岁后三阳脉衰于上，面皆焦，发始白'}
+    else if(age<49){current='三阳脉衰，面皆焦，发始白';next='四十九岁后任脉虚，太冲脉衰少，天癸竭'}
+    else{current='任脉虚，太冲脉衰少，天癸竭';next='注重养生，颐养天年'}
+  }
+  return{current,next};
+}
+
+function getAgeTimeline(gender,age){
+  const isMale=gender==='male';
+  if(isMale){
+    return[{age:8,stage:'肾气实',desc:'发长齿更'},{age:16,stage:'肾气盛',desc:'天癸至'},{age:24,stage:'肾气平均',desc:'真牙生'},{age:32,stage:'筋骨隆盛',desc:'肌肉满壮'},{age:40,stage:'肾气衰',desc:'发堕齿槁'},{age:48,stage:'阳气衰',desc:'面焦发白'},{age:56,stage:'肝气衰',desc:'筋不能动'},{age:64,stage:'五脏皆衰',desc:'齿发去'}];
+  }else{
+    return[{age:7,stage:'肾气盛',desc:'齿更发长'},{age:14,stage:'天癸至',desc:'月事以时下'},{age:21,stage:'肾气平均',desc:'真牙生'},{age:28,stage:'身体盛壮',desc:'发长极'},{age:35,stage:'阳明脉衰',desc:'面始焦'},{age:42,stage:'三阳脉衰',desc:'发始白'},{age:49,stage:'任脉虚',desc:'天癸竭'}];
+  }
+}
+
+// ========== 渲染函数 ==========
+function personAvatarSVG(gender,age){
+  const isMale=gender==='male';
+  const isOld=age>=50;const isYoung=age<25;
+  const skinColor=isOld?'#d4c4a8':'#f0d8c0';
+  const hairColor=isOld?'#888':'#3a2a1a';
+  if(isMale){
+    return`<svg viewBox="0 0 80 96" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="40" cy="78" rx="28" ry="18" fill="${isOld?'#6b5b4a':'#4a5568'}"/>
+      <circle cx="40" cy="36" r="22" fill="${skinColor}"/>
+      <path d="M18 32 Q18 14 40 14 Q62 14 62 32 Q62 26 58 24 Q50 18 40 18 Q30 18 22 24 Q18 26 18 32" fill="${hairColor}"/>
+      <circle cx="32" cy="36" r="2" fill="#333"/>
+      <circle cx="48" cy="36" r="2" fill="#333"/>
+      <path d="M34 46 Q40 50 46 46" stroke="#8b4513" stroke-width="1.5" fill="none"/>
+      ${isOld?'<path d="M28 28 L36 30 M44 30 L52 28" stroke="#999" stroke-width="1"/>':''}
+    </svg>`;
+  }else{
+    return`<svg viewBox="0 0 80 96" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="40" cy="80" rx="26" ry="16" fill="${isOld?'#7c5a8a':'#c53030'}"/>
+      <circle cx="40" cy="36" r="21" fill="${skinColor}"/>
+      <path d="M16 34 Q14 10 40 10 Q66 10 64 34 L64 50 Q60 42 56 40 L56 28 Q50 20 40 20 Q30 20 24 28 L24 40 Q20 42 16 50 Z" fill="${hairColor}"/>
+      <circle cx="32" cy="36" r="2" fill="#333"/>
+      <circle cx="48" cy="36" r="2" fill="#333"/>
+      <path d="M34 46 Q40 50 46 46" stroke="#c53030" stroke-width="1.5" fill="none"/>
+      <circle cx="26" cy="42" r="3" fill="#fca5a5" opacity="0.5"/>
+      <circle cx="54" cy="42" r="3" fill="#fca5a5" opacity="0.5"/>
+    </svg>`;
+  }
+}
+
+function renderModule(num,title,subtitle,content,open=true){
+  return`<div class="module ${open?'open':''}" id="module${num}">
+    <div class="module-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="module-num">${num}</div>
+      <div class="module-title"><h3>${title}</h3><p>${subtitle}</p></div>
+      <div class="module-chevron">▶</div>
+    </div>
+    <div class="module-body">${content}</div>
+  </div>`;
+}
+
+function renderResult(result){
+  const {energy,congenital,ganzhi,zhongyun,sitian,birthDir,currentDir,occ,detailedLuckQi}=result;
+  const constitutionResult=result.constitutionResult||null;
+  const syndromePatterns=result.syndromePatterns||[];
+  const input=result.input;
+  const zangs=['肝','心','脾','肺','肾'];
+  const constitution=judgeConstitution(energy);
+  const symptoms=calcSymptoms(energy);
+  const top5=symptoms.slice(0,5);
+  const combos=calcComboPathologies(energy);
+  const exercises=recommendExercises(energy,input.occupation,input.currentAge);
+  const ageRhythm=getAgeRhythm(input.gender,input.currentAge);
+  const timeline=getAgeTimeline(input.gender,input.currentAge);
+  const weakZangs=zangs.filter(z=>energy[z]<=-1).sort((a,b)=>energy[a]-energy[b]);
+  const strongZangs=zangs.filter(z=>energy[z]>=1).sort((a,b)=>energy[b]-energy[a]);
+  const treatZangs=weakZangs.length>0?weakZangs:zangs;
+  const summary=`${ganzhi.gan}${ganzhi.zhi}年（${zhongyun.zang}运${zhongyun.isTaiGuo?'太过':'不及'}）生人，先天${weakZangs.length>0?weakZangs.slice(0,2).join('、')+'偏弱':strongZangs.length>0?strongZangs.slice(0,2).join('、')+'偏旺':'五脏平和'}，体质属「${constitution.name}」。当前${input.currentAge}岁，${ageRhythm.current}，需重点关注${weakZangs.length>0?weakZangs[0]+'的调养':'整体平衡维护'}。`;
+
+  let html='';
+
+  // 模块1：结论概览
+  let m1='';
+  m1+=`<div class="grid-12">
+    <div class="col-4">
+      <div class="person-card">
+        <div class="person-avatar">${personAvatarSVG(input.gender,input.currentAge)}</div>
+        <div class="person-info">
+          <div class="age-gender">${input.currentAge}岁 · ${input.gender==='male'?'男':'女'}</div>
+          <div>📅 ${input.birthYear}年出生</div>
+          <div>📍 ${input.birthProvince}${input.birthCity}</div>
+          <div>🏠 ${input.currentProvince}${input.currentCity}</div>
+          <div>💼 ${occ.name}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-5">
+      <div class="summary-card">
+        <div class="title">ℹ️ 推演总评</div>
+        <div class="content">${summary}</div>
+        <div class="badges">
+          ${combos.slice(0,3).map(c=>`<span class="badge badge-destructive">${c.name}</span>`).join('')}
+          <span class="badge badge-secondary">${constitution.name}</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-3">
+      <div class="top3-card">
+        <div class="title">⚠️ 高风险症状 Top 3</div>
+        ${top5.slice(0,3).map((s,i)=>`<div class="top3-item"><span class="top3-rank">${i+1}</span><span class="top3-name">${s.name}</span></div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+  m1+=`<div class="energy-section">
+    <div class="title">💊 五脏能量一览（7级制：过弱/弱/偏弱/平和/偏强/强/过强）</div>
+    <div class="grid-12">
+      <div class="col-9">
+        ${zangs.map(z=>{
+          const v=energy[z];const pct=((v+3)/6)*100;const color=ENERGY_COLORS[v];
+          return`<div class="energy-row">
+            <div class="label"><span class="zang" style="color:${color}">${z}</span><span class="val" style="color:${color}">${v>0?'+':''}${v} · ${ENERGY_LABELS[v]}</span></div>
+            <div class="energy-bar"><div class="energy-fill" style="left:${v<0?pct:50}%;width:${Math.abs(v)*16.67}%;background:${color}"></div></div>
+            <div class="energy-level-text">先天${ENERGY_LABELS[congenital[z]]} → 当前${ENERGY_LABELS[v]}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="col-3">
+        <div class="constitution-box">
+          <div class="title">体质类型</div>
+          <span class="badge badge-primary" style="font-size:13px;padding:4px 12px">${constitution.name}</span>
+          <div class="criteria">${constitution.desc}<br><br>判定依据：${constitution.criteria}</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  html+=renderModule(1,'结论概览','先天体质总评 · 五脏能量 · 高风险症状',m1);
+
+  // 模块2：五脏能量变化
+  let m2='';
+  m2+=`<div class="radar-container">
+    <div class="radar-box purple">
+      <div class="rtitle">先天能量</div>
+      <div class="radar-chart" id="radarCongenital"></div>
+    </div>
+    <div class="radar-arrow"><div class="arrow">→</div><div class="text">先后天<br>叠加</div></div>
+    <div class="radar-box orange">
+      <div class="rtitle">当前能量</div>
+      <div class="radar-chart" id="radarCurrent"></div>
+    </div>
+  </div>`;
+  // 变化影响矩阵
+  m2+=`<div style="font-size:13px;font-weight:600;margin-bottom:8px">📊 变化影响矩阵</div>`;
+  m2+=`<table class="matrix-table">
+    <tr><th>脏腑</th><th>先天</th><th>年龄</th><th>地域</th><th>职业</th><th>综合</th></tr>
+    ${zangs.map(z=>{
+      const cv=congenital[z];const ageEff=(input.gender==='male'?(z==='肾'&&input.currentAge>=40?-1:0)+(z==='肝'&&input.currentAge>=48?-1:0)+(z==='心'&&input.currentAge>=56?-1:0):(z==='脾'&&input.currentAge>=35?-1:0)+(z==='肝'&&input.currentAge>=42?-1:0)+(z==='肾'&&input.currentAge>=49?-1:0));
+      const regEff=(currentDir!==birthDir&&ZANG_WUXING[({东:'木',南:'火',中:'土',西:'金',北:'水'})[currentDir]]===z)?1:0;
+      const occEff=occ.effects[z]||0;
+      const total=energy[z];
+      const cls=v=>v>0?'pos':v<0?'neg':'zero';
+      return`<tr><td class="zang">${z}</td><td class="${cls(cv)}">${cv>0?'+':''}${cv}</td><td class="${cls(ageEff)}">${ageEff>0?'+':''}${ageEff}</td><td class="${cls(regEff)}">${regEff>0?'+':''}${regEff}</td><td class="${cls(occEff)}">${occEff>0?'+':''}${occEff}</td><td class="total" style="color:${ENERGY_COLORS[total]}">${total>0?'+':''}${total}</td></tr>`;
+    }).join('')}
+  </table>`;
+  // 推演步骤折叠
+  const organSymptomMap={'肝':'目（目赤、视物模糊、眼干）','心':'舌（口舌生疮、舌痛、味觉减退）','脾':'口（口淡、口苦、口臭、流涎）','肺':'鼻（鼻塞、流涕、鼻干、嗅觉减退）','肾':'耳及二阴（耳鸣、尿频、夜尿多）'};
+  m2+=`<details class="details-box"><summary>先天禀赋推演步骤</summary><div class="content">
+    <div class="step-item"><div class="step-title">第一步：推算天干地支</div><div class="step-content">${input.birthYear}年 = ${ganzhi.gan}${ganzhi.zhi}年（天干${ganzhi.gan}，地支${ganzhi.zhi}）</div></div>
+    <div class="step-item"><div class="step-title">第二步：判定中运太过/不及</div><div class="step-content">${zhongyun.desc}，对${zhongyun.zang}脏能量影响${zhongyun.value>0?'+':''}${zhongyun.value}</div></div>
+    <div class="step-item"><div class="step-title">第三步：推算司天在泉</div><div class="step-content">${sitian.desc}</div></div>
+    <div class="step-item"><div class="step-title">第四步：五方地域属性</div><div class="step-content">出生地${input.birthProvince}属${birthDir}方，现居地${input.currentProvince}属${currentDir}方</div></div>
+    <div class="step-item"><div class="step-title">第五步：能量叠加计算</div><div class="step-content">中运 + 司天 + 在泉 + 生克传变 + 出生地 = 先天能量；再加年龄、现居地、职业 = 当前能量</div></div>
+    <div class="step-item"><div class="step-title">第六步：生克传变分析</div><div class="step-content">${weakZangs.length>0?weakZangs.map(z=>{const wx=WUXING_ZANG[z];const mother=ZANG_WUXING[Object.keys(SHENG).find(k=>SHENG[k]===wx)];return `${z}（${wx}）之母为${mother}，${mother}能量${ENERGY_LABELS[congenital[mother]]}，${congenital[mother]<=-1?'生源不足':'相生正常'}`;}).join('；'):'五脏平和，无明显生克异常'}</div></div>
+    <div class="step-item"><div class="step-title">第七步：五脏开窍与官窍外候</div><div class="step-content">
+      <div style="margin-bottom:6px"><strong>理论依据：</strong>《素问·金匮真言论》："东方青色，入通于肝，开窍于目……南方赤色，入通于心，开窍于耳……中央黄色，入通于脾，开窍于口……西方白色，入通于肺，开窍于鼻……北方黑色，入通于肾，开窍于二阴。"</div>
+      <div style="margin-bottom:6px">《灵枢·脉度》："肝气通于目，肝和则目能辨五色矣；心气通于舌，心和则舌能知五味矣；脾气通于口，脾和则口能知五谷矣；肺气通于鼻，肺和则鼻能知香臭矣；肾气通于耳，肾和则耳能闻五音矣。"</div>
+      <div><strong>您的状态：</strong>脏气通于窍，察外知内。${weakZangs.length>0?weakZangs.slice(0,2).map(z=>`${z}脏能量${ENERGY_LABELS[energy[z]]}，可能通过${organSymptomMap[z]||'对应官窍'}表现出来`).join('；'):'五脏平和，官窍功能正常'}</div>
+    </div></div>
+    <div class="step-item"><div class="step-title">第八步：经脉病候与虚实寒热辨证</div><div class="step-content">
+      <div style="margin-bottom:6px"><strong>经脉病候：</strong>《灵枢·经脉》载十二经脉"是动则病""所生病"，按经络循行部位判断症状归属。您的弱脏对应经脉循行部位易出现相关症状。</div>
+      <div style="margin-bottom:6px"><strong>虚实寒热辨证：</strong>能量≥+2为实证/热证，+1为偏实/偏热，0为平和，-1为偏虚/偏寒，≤-2为虚证/寒证。</div>
+      <div style="margin-bottom:6px"><strong>您的证候格局：</strong>${zangs.map(z=>`${z}脏（${ENERGY_LABELS[energy[z]]}，${energy[z]>=2?'实热证':energy[z]===1?'偏实热':energy[z]===0?'平和':energy[z]===-1?'偏虚寒':'虚寒证'}）`).join('、')}</div>
+      <div><strong>病机十九条命中：</strong>${weakZangs.length>0?weakZangs.slice(0,2).map(z=>{const m={'肝':'诸风掉眩，皆属于肝','心':'诸痛痒疮，皆属于心','脾':'诸湿肿满，皆属于脾','肺':'诸气膹郁，皆属于肺','肾':'诸寒收引，皆属于肾'};return m[z]||''}).filter(x=>x).join('；'):'五脏平和，无明显病机命中'}；${energy['肝']>=1?'诸暴强直皆属于风；':''}${energy['心']>=1?'诸热瞀瘛皆属于火；':''}${energy['脾']<=-1?'诸痉项强皆属于湿；':''}${energy['肾']<=-1?'诸病水液澄澈清冷皆属于寒；':''}</div>
+    </div></div>
+    ${detailedLuckQi?`<div class="step-item"><div class="step-title">第九步：五运六气精细化推演（主气·客气·客主加临·运气同化）</div><div class="step-content">
+      <div style="margin-bottom:6px"><strong>出生时间：</strong>${detailedLuckQi.solarMonth}月${detailedLuckQi.solarDay}日${detailedLuckQi.shichen?detailedLuckQi.shichen+'时':''}</div>
+      <div style="margin-bottom:6px"><strong>主气：</strong>${detailedLuckQi.zhuQi}（${detailedLuckQi.zhuQiZang}），${detailedLuckQi.zhuQiAdjust>0?'助长':'制约'}${detailedLuckQi.zhuQiZang}脏能量</div>
+      <div style="margin-bottom:6px"><strong>客气：</strong>${detailedLuckQi.keQi}（${detailedLuckQi.keQiZang}），${detailedLuckQi.keQiAdjust>0?'助长':'制约'}${detailedLuckQi.keQiZang}脏能量</div>
+      <div style="margin-bottom:6px"><strong>客主加临：</strong>${detailedLuckQi.shunNi}${detailedLuckQi.tongHua?'，运气同化：'+detailedLuckQi.tongHua:''}</div>
+      ${detailedLuckQi.shichen?`<div style="margin-bottom:6px"><strong>出生时辰禀赋：</strong>${detailedLuckQi.shichen}时${detailedLuckQi.shichenZang?detailedLuckQi.shichenZang+'经当令，禀赋+1':''}</div>`:''}
+      <div><strong>理论依据：</strong>《素问·六微旨大论》："上下有位，左右有纪"；《素问·至真要大论》："主气之静，客气之动，动静相召，上下相临，阴阳相错，而变由生也。"</div>
+    </div></div>`:''}
+    ${constitutionResult?`<div class="step-item"><div class="step-title">第十步：体质问卷评分与证型修正</div><div class="step-content">
+      <div style="margin-bottom:6px"><strong>问卷结果：</strong>主导体质为「${constitutionResult.mainType}」（转化分${constitutionResult.mainScore}分）${constitutionResult.secondary.length>0?'，兼夹体质：'+constitutionResult.secondary.map(s=>s.type+'('+s.score+'分)').join('、'):''}</div>
+      <div style="margin-bottom:6px"><strong>各体质得分：</strong>${Object.keys(constitutionResult.scores).map(t=>t+':'+constitutionResult.scores[t].converted+'分').join('、')}</div>
+      <div><strong>修正逻辑：</strong>根据王琦《中医体质分类与判定》标准，将问卷得分与先天能量推演结果进行交叉验证，对体质类型和复合证型进行修正。</div>
+    </div></div>`:''}
+    ${syndromePatterns.length>0?`<div class="step-item"><div class="step-title">第十一步：复合证型推断与调理方向</div><div class="step-content">
+      <div style="margin-bottom:6px"><strong>推断证型：</strong>${syndromePatterns.slice(0,4).map(p=>p.name).join('、')}</div>
+      <div style="margin-bottom:6px"><strong>推断依据：</strong>基于五脏能量格局的生克乘侮关系，结合体质问卷结果，推断可能的复合证型</div>
+      <div><strong>调理方向：</strong>${syndromePatterns.slice(0,3).map(p=>p.name+'：'+p.treatment).join('；')}</div>
+    </div></div>`:''}
+  </div></details>`;
+  m2+=`<details class="details-box"><summary>后天因素影响分析</summary><div class="content">
+    <div class="step-item"><div class="step-title">年龄影响</div><div class="step-content">当前${input.currentAge}岁，${input.gender==='male'?'男八节律':'女七节律'}：${ageRhythm.current}</div></div>
+    <div class="step-item"><div class="step-title">地域影响</div><div class="step-content">出生地${birthDir}方→现居地${currentDir}方，${birthDir!==currentDir?'地域变化对相应脏腑有影响':'出生地与现居地方位相同，地域影响较小'}</div></div>
+    <div class="step-item"><div class="step-title">职业影响</div><div class="step-content">${occ.name}，作息特点：${occ.tags.join('、')}；对五脏影响：${zangs.filter(z=>occ.effects[z]!==0).map(z=>`${z}${occ.effects[z]>0?'+':''}${occ.effects[z]}`).join('、')||'无明显影响'}</div></div>
+  </div></details>`;
+  html+=renderModule(2,'五脏六腑能量变化','先天vs当前能量对比 · 变化影响矩阵 · 推演步骤',m2);
+
+  // 模块3：体质与健康风险
+  let m3='';
+  m3+=`<div class="constitution-card"><div class="title">👤 体质类型判定</div>
+    <span class="badge badge-primary" style="font-size:14px;padding:5px 14px;margin-right:8px">${constitution.name}</span>
+    <div style="font-size:12px;color:var(--muted-foreground);margin-top:8px;background:hsl(30 20% 85%/15%);padding:10px 12px;border-radius:6px">${constitution.desc}<br><br>判定依据：${constitution.criteria}</div>
+  </div>`;
+  // 复合证型推断
+  if(syndromePatterns.length>0){
+    m3+=`<div class="constitution-card" style="border-color:hsl(280 60% 40%/20%);background:hsl(280 60% 40%/3%)">
+      <div class="title" style="color:hsl(280 60% 40%)">🔮 复合证型推断（基于五脏能量格局${constitutionResult?' + 体质问卷':''}）</div>
+      <div style="font-size:12px;color:var(--muted-foreground);margin-bottom:12px">以下证型为根据您的五脏能量偏性和体质问卷结果推断的可能证型，仅供参考，具体辨证请咨询专业中医师。</div>
+      <div class="combo-grid">
+        ${syndromePatterns.slice(0,4).map(p=>`<div class="syndrome-pattern-card">
+          <div class="pattern-header"><div class="pattern-name">${p.name}</div><span class="pattern-type">${p.fromConstitution?'体质关联':'能量推断'}</span></div>
+          <div class="pattern-desc">${p.desc}</div>
+          <div class="pattern-symptoms">${p.symptoms.slice(0,5).map(s=>`<span class="badge badge-secondary">${s}</span>`).join('')}</div>
+          <div class="pattern-treatment"><strong>治法：</strong>${p.treatment}</div>
+          <div class="pattern-formula">${p.formula}</div>
+        </div>`).join('')}
+      </div>
+      <div class="disclaimer-box">⚠️ 以上证型推断和方剂参考仅为理论推演，不能替代专业中医师的辨证论治。如有健康问题，请及时就医。</div>
+    </div>`;
+  }
+  m3+=`<div class="constitution-card" style="border-color:hsl(0 84% 60%/20%);background:hsl(0 84% 60%/3%)">
+    <div class="title" style="color:var(--destructive)">⚠️ 最可能出现的 Top 5 症状</div>
+    <div class="top5-grid">
+      ${top5.map((s,i)=>`<div class="top5-item">
+        <div class="rank">${i+1}</div>
+        <div class="name">${s.name}</div>
+        <div class="score">风险分 ${s.score}</div>
+        <div class="zang-badges"><span class="badge badge-blue">${s.zang}</span><span class="badge badge-amber">${s.trend}</span><span class="badge badge-primary">${s.organ}</span><span class="badge ${s.syndrome==='虚'?'badge-blue':s.syndrome==='实'?'badge-destructive':s.syndrome==='寒'?'badge-primary':'badge-amber'}">${s.syndrome}证</span></div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+  m3+=`<div class="tip-box">😊 如果您目前没有被以上问题困扰，说明您平时保养得很好，继续保持。</div>`;
+  // 年龄生命节律
+  m3+=`<div class="constitution-card">
+    <div class="title">📅 年龄生命节律（${input.gender==='male'?'男子八岁周期':'女子七岁周期'}）</div>
+    <div class="timeline-container"><div class="timeline">
+      ${timeline.map((t,i)=>{
+        const isPast=input.currentAge>=t.age;const isCurrent=input.currentAge>=t.age&&(i===timeline.length-1||input.currentAge<timeline[i+1].age);
+        return`<div class="timeline-node ${isCurrent?'current':isPast?'past':''}">
+          <div class="timeline-dot"></div>
+          <div class="stage">${t.age}岁</div>
+          <div class="desc">${t.stage}<br>${t.desc}</div>
+        </div>`;
+      }).join('')}
+    </div></div>
+    <div class="timeline-info">
+      <div><strong>当前阶段：</strong>${ageRhythm.current}</div>
+      <div><strong>本阶段特点：</strong>${constitution.name}体质在此阶段${weakZangs.length>0?weakZangs[0]+'脏功能开始衰退，需注意调养':'五脏功能平稳，保持良好生活习惯'}</div>
+      <div><strong>下一阶段预警：</strong>${ageRhythm.next}</div>
+      <div><strong>与先天叠加：</strong>先天${weakZangs.length>0?weakZangs[0]+'偏弱，':'五脏平和，'}叠加当前年龄阶段影响，${weakZangs.length>0?'需提前干预':'继续保持'}</div>
+    </div>
+  </div>`;
+  // 组合病机
+  if(combos.length>0){
+    m3+=`<div class="constitution-card">
+      <div class="title">⚡ 组合病机（跨脏腑综合病机）</div>
+      <div class="combo-grid">
+        ${combos.map(c=>`<div class="combo-card">
+          <div class="header"><div class="name">🔴 ${c.name}</div><span class="badge badge-destructive">高风险</span></div>
+          <div class="desc">${c.desc}</div>
+          <div class="symptoms">${c.symptoms.slice(0,5).map(s=>`<span class="badge badge-secondary">${s}</span>`).join('')}${c.symptoms.length>5?`<span class="badge badge-secondary">+${c.symptoms.length-5}</span>`:''}</div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }
+  // 表象清单折叠（Tab切换：按病势趋向 / 按官窍分类）
+  const trends=['上焦头面','中焦胸腹','下焦二阴','全身'];
+  const trendColors={'上焦头面':'red','中焦胸腹':'amber','下焦二阴':'blue','全身':'purple'};
+  const organs=['目','舌','口','鼻','耳','二阴','全身'];
+  const organZang={'目':'肝','舌':'心','口':'脾','鼻':'肺','耳':'肾','二阴':'肾','全身':'全身'};
+  const organColors={'目':'blue','舌':'red','口':'amber','鼻':'purple','耳':'red','二阴':'blue','全身':'purple'};
+  const tabId='symTab'+Math.random().toString(36).substr(2,6);
+  m3+=`<details class="details-box"><summary>📋 表象清单（共${symptoms.length}项，可按病势趋向或官窍分类查看）</summary><div class="content">
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+      <button id="${tabId}-btn-trend" onclick="document.getElementById('${tabId}-trend').style.display='block';document.getElementById('${tabId}-organ').style.display='none';document.getElementById('${tabId}-syndrome').style.display='none';this.style.background='var(--primary)';this.style.color='#fff';document.getElementById('${tabId}-btn-organ').style.background='var(--card)';document.getElementById('${tabId}-btn-organ').style.color='var(--muted-foreground)';document.getElementById('${tabId}-btn-syndrome').style.background='var(--card)';document.getElementById('${tabId}-btn-syndrome').style.color='var(--muted-foreground)'" style="padding:6px 14px;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:12px;background:var(--primary);color:#fff;font-family:inherit">按病势趋向</button>
+      <button id="${tabId}-btn-organ" onclick="document.getElementById('${tabId}-organ').style.display='block';document.getElementById('${tabId}-trend').style.display='none';document.getElementById('${tabId}-syndrome').style.display='none';this.style.background='var(--primary)';this.style.color='#fff';document.getElementById('${tabId}-btn-trend').style.background='var(--card)';document.getElementById('${tabId}-btn-trend').style.color='var(--muted-foreground)';document.getElementById('${tabId}-btn-syndrome').style.background='var(--card)';document.getElementById('${tabId}-btn-syndrome').style.color='var(--muted-foreground)'" style="padding:6px 14px;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:12px;background:var(--card);color:var(--muted-foreground);font-family:inherit">按官窍分类</button>
+      <button id="${tabId}-btn-syndrome" onclick="document.getElementById('${tabId}-syndrome').style.display='block';document.getElementById('${tabId}-trend').style.display='none';document.getElementById('${tabId}-organ').style.display='none';this.style.background='var(--primary)';this.style.color='#fff';document.getElementById('${tabId}-btn-trend').style.background='var(--card)';document.getElementById('${tabId}-btn-trend').style.color='var(--muted-foreground)';document.getElementById('${tabId}-btn-organ').style.background='var(--card)';document.getElementById('${tabId}-btn-organ').style.color='var(--muted-foreground)'" style="padding:6px 14px;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:12px;background:var(--card);color:var(--muted-foreground);font-family:inherit">按证型分类</button>
+    </div>
+    <div id="${tabId}-trend">`;
+  trends.forEach(tr=>{
+    const items=symptoms.filter(s=>s.trend===tr);
+    if(items.length>0){
+      m3+=`<div class="symptom-group">
+        <div class="symptom-group-title ${trendColors[tr]}">${tr==='上焦头面'?'🔴':tr==='中焦胸腹'?'🟡':tr==='下焦二阴'?'🔵':'🟣'} ${tr} · ${items.length}项</div>
+        <div class="symptom-2col">
+          ${items.map(s=>`<div class="symptom-row"><span class="name">${s.name}</span><span class="badges"><span class="badge ${s.score>=70?'badge-destructive':s.score>=50?'badge-amber':'badge-blue'}">${s.score>=70?'高':s.score>=50?'中':'低'}</span><span class="badge badge-primary">${s.organ}</span></span></div>`).join('')}
+        </div>
+      </div>`;
+    }
+  });
+  m3+=`</div><div id="${tabId}-organ" style="display:none">`;
+  organs.forEach(og=>{
+    const items=symptoms.filter(s=>s.organ===og);
+    if(items.length>0){
+      m3+=`<div class="symptom-group">
+        <div class="symptom-group-title ${organColors[og]}">${og==='目'?'👁️':og==='舌'?'👅':og==='口'?'👄':og==='鼻'?'👃':og==='耳'?'👂':og==='二阴'?'🚻':'🫀'} ${og}（${organZang[og]}开窍）· ${items.length}项</div>
+        <div class="symptom-2col">
+          ${items.map(s=>`<div class="symptom-row"><span class="name">${s.name}</span><span class="badges"><span class="badge ${s.score>=70?'badge-destructive':s.score>=50?'badge-amber':'badge-blue'}">${s.score>=70?'高':s.score>=50?'中':'低'}</span><span class="badge badge-blue">${s.zang}</span></span></div>`).join('')}
+        </div>
+      </div>`;
+    }
+  });
+    m3+=`</div><div id="${tabId}-syndrome" style="display:none">`;
+  const syndromes=['虚','实','寒','热'];
+  const syndromeLabels={'虚':'虚证（气虚/血虚/阴虚/阳虚）','实':'实证（气滞/血瘀/痰浊）','寒':'寒证（外寒/内寒）','热':'热证（实热/虚热/湿热）'};
+  const syndromeColors={'虚':'blue','实':'red','寒':'primary','热':'amber'};
+  syndromes.forEach(sg=>{
+    const items=symptoms.filter(s=>s.syndrome===sg);
+    if(items.length>0){
+      m3+=`<div class="symptom-group">
+        <div class="symptom-group-title ${syndromeColors[sg]}">${sg==='虚'?'🔵':sg==='实'?'🔴':sg==='寒'?'🟢':'🟠'} ${syndromeLabels[sg]} · ${items.length}项</div>
+        <div class="symptom-2col">
+          ${items.map(s=>`<div class="symptom-row"><span class="name">${s.name}</span><span class="badges"><span class="badge ${s.score>=70?'badge-destructive':s.score>=50?'badge-amber':'badge-blue'}">${s.score>=70?'高':s.score>=50?'中':'低'}</span><span class="badge badge-blue">${s.zang}</span><span class="badge badge-primary">${s.organ}</span></span></div>`).join('')}
+        </div>
+      </div>`;
+    }
+  });
+m3+=`</div></div></details>`;
+  html+=renderModule(3,'体质与健康风险','体质判定 · Top5症状 · 年龄节律 · 组合病机 · 表象清单',m3);
+
+  // 模块4：调理方案
+  let m4='';
+  m4+=`<div style="margin-bottom:14px;font-size:13px"><strong>重点调理：</strong>
+    ${treatZangs.slice(0,3).map(z=>`<span class="badge ${energy[z]<=-1?'badge-destructive':'badge-primary'}" style="margin-right:6px">${z} ${energy[z]<=-1?'补':'泻'}（${ENERGY_LABELS[energy[z]]}）</span>`).join('')}
+    ${treatZangs.length===0?'<span class="badge badge-primary">五脏平和</span>':''}
+  </div>`;
+  // 饮食调理
+  m4+=`<div class="sub-section">
+    <div class="sub-section-title">🍽 饮食调理 <span class="tag">五味调和·虚补母实泻子</span></div>
+    ${treatZangs.slice(0,3).map(z=>`<div class="food-group">
+      <div class="food-group-title"><img src="${ORGAN_IMGS[z]}" alt="${z}"> ${z}脏调理（${ENERGY_LABELS[energy[z]]}）</div>
+      <div class="food-grid">
+        ${FOODS[z].map(f=>`<div class="food-card"><img src="${f.img}" alt="${f.name}"><div class="fname">${f.name}</div><div class="ftag">${f.symptom}</div></div>`).join('')}
+      </div>
+    </div>`).join('')}
+    ${(()=>{const relevantAvoid=AVOID_FOODS.filter(f=>f.affectedZang.some(z=>weakZangs.includes(z)||strongZangs.includes(z))).slice(0,8);if(relevantAvoid.length===0)return '';return `<div class="avoid-group">
+      <div class="avoid-title">⚠️ 少食/忌食 <span class="tag">根据您的脏腑偏性，以下食物需控制摄入</span></div>
+      <div class="avoid-grid">
+        ${relevantAvoid.map(f=>`<div class="avoid-card">
+          <img src="${f.img}" alt="${f.name}">
+          <div class="avoid-name">${f.name}</div>
+          <div class="avoid-reason">${f.reason}</div>
+          <div class="avoid-zang">${f.affectedZang.map(z=>`<span class="badge badge-destructive">${z}</span>`).join('')}</div>
+        </div>`).join('')}
+      </div>
+    </div>`})()}
+  </div>`;
+  // 运动调理
+  m4+=`<div class="sub-section">
+    <div class="sub-section-title">🏃 运动调理 <span class="tag">动则生阳·形神共养</span></div>
+    <div class="exercise-grid">
+      ${exercises.map(ex=>`<div class="exercise-card">
+        <div class="exercise-img"><img src="${input.gender==='female'?ex.imgFemale:ex.img}" alt="${ex.name}"><span class="exercise-type">${ex.type}</span></div>
+        <div class="exercise-body">
+          <div class="ename">${ex.name}</div>
+          <div class="eeffect">${ex.effect}</div>
+          <div class="etime">⏰ ${ex.time}</div>
+          <div class="ereason">✨ 您${weakZangs.length>0?'先天'+weakZangs[0]+'偏弱，':'五脏平和，'}${ex.name}可${ex.effect}，特别适合${occ.name}人群</div>
+        </div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+  // 经络穴位
+  m4+=`<div class="sub-section">
+    <div class="sub-section-title">📍 经络穴位 <span class="tag">原穴·背俞穴·对症取穴</span></div>
+    ${treatZangs.slice(0,3).map(z=>`<div class="acupoint-group">
+      <div class="acupoint-group-title">${z}经核心穴位</div>
+      <div class="acupoint-grid">
+        ${ACUPOINTS[z].map(a=>`<div class="acupoint-card" onclick="this.classList.toggle('open')">
+          <img src="${a.img}" alt="${a.name}">
+          <div class="abody"><div class="aname">${a.name}</div><div class="aeffect">${a.effect}</div>
+          <div class="adetail"><strong>定位：</strong>${a.location}<br><strong>操作：</strong>${a.method}</div></div>
+        </div>`).join('')}
+      </div>
+    </div>`).join('')}
+  </div>`;
+  // 起居调理十二时辰
+  const weakFuMap={肝:'胆',心:'小肠',脾:'胃',肺:'大肠',肾:'膀胱'};
+  m4+=`<div class="sub-section">
+    <div class="sub-section-title">🌙 起居调理·十二时辰 <span class="tag">子午流注·顺时调养</span></div>
+    <div class="shichen-tip">* 高亮时辰为您弱脏对应的当令时辰，需重点调养</div>
+    <div class="shichen-grid">
+      ${SHICHEN.map(s=>{
+        const isHighlight=weakZangs.some(z=>weakFuMap[z]===s.jing.replace('经',''))||weakZangs.some(z=>s.jing.includes(z));
+        return`<div class="shichen-cell ${isHighlight?'highlight':''}">
+          <div class="sname">${s.name}</div><div class="stime">${s.time}</div><div class="sjing">${s.jing}</div><div class="sadvice">${s.advice}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+  // 情志调理
+  const emotionZangs=[...weakZangs,...strongZangs].slice(0,2);
+  if(emotionZangs.length>0){
+    m4+=`<div class="sub-section">
+      <div class="sub-section-title">😊 情志调理 <span class="tag">五志相胜·以情胜情</span></div>
+      <div class="emotion-grid">
+        ${emotionZangs.map(z=>{const e=EMOTIONS[z];return`<div class="emotion-card">
+          <div class="emotion-icon">${e.emoji}</div>
+          <div class="emotion-body">
+            <div class="ename">${e.name} <span class="badge ${energy[z]<=-1?'badge-destructive':'badge-primary'}">${z}${ENERGY_LABELS[energy[z]]}</span></div>
+            <div class="edesc">${e.desc}</div>
+            <div class="esheng">${e.sheng}</div>
+            <div class="eadvice">💡 ${e.advice}</div>
+          </div>
+        </div>`}).join('')}
+      </div>
+    </div>`;
+  }
+  // 当季调理
+  const month=new Date().getMonth()+1;
+  const season=month>=3&&month<=5?'春':month>=6&&month<=8?'夏':month>=9&&month<=11?'秋':'冬';
+  const seasonTips={春:'养肝为主，宜早起晚睡，多食青色食物，保持心情舒畅，忌怒',夏:'养心为主，宜晚睡早起，多食红色食物，清心降火，忌大汗',秋:'养肺为主，宜早睡早起，多食白色食物，滋阴润燥，忌悲',冬:'养肾为主，宜早睡晚起，多食黑色食物，温补阳气，忌恐'};
+  m4+=`<div class="sub-section">
+    <div class="sub-section-title">🍃 当季调理重点 <span class="tag">顺时养生</span></div>
+    <div class="season-box">当前为${season}季，${seasonTips[season]}。结合您的${constitution.name}体质，建议重点关注${weakZangs.length>0?weakZangs[0]:'肺'}脏的调养。</div>
+  </div>`;
+  // 调理总原则
+  m4+=`<div class="principle-box">
+    <div class="icon">📖</div>
+    <div><div class="text">"必先岁气，无伐天和，无盛盛，无虚虚，而遗人天殃，无致邪，无失正，绝人长命。"</div>
+    <div class="source">——《素问·五常政大论》</div></div>
+  </div>`;
+  html+=renderModule(4,'调理方案','饮食 · 运动 · 经络穴位 · 十二时辰起居 · 情志 · 当季',m4);
+
+  // 模块5：参考依据
+  let m5='';
+  m5+=`<div style="font-size:12px;color:var(--muted-foreground);margin-bottom:14px">所有推演结论均可追溯至中医经典原文，点击展开查看详情。共 ${REFERENCES.length} 部经典 · ${REFERENCES.reduce((s,r)=>s+r.quotes.length,0)} 条原文</div>`;
+  REFERENCES.forEach(r=>{
+    m5+=`<details class="ref-accordion"><summary>📖 ${r.classic} <span class="count">${r.quotes.length}条</span></summary><div class="content">
+      ${r.quotes.map(q=>`<div class="ref-item"><div class="quote">"${q.text}"</div><div class="usage">用于：${q.usage}</div></div>`).join('')}
+    </div></details>`;
+  });
+  html+=renderModule(5,'参考依据','经典原文溯源 · 推演依据可查',m5);
+
+  return html;
+}
+
+// ========== 主函数 ==========
+function calculate(){
+  const birthYear=parseInt(document.getElementById('birthYear').value);
+  const birthProvince=document.getElementById('birthProvince').value;
+  const birthCity=document.getElementById('birthCity').value;
+  const gender=document.getElementById('gender').value;
+  const currentAge=parseInt(document.getElementById('currentAge').value);
+  const currentProvince=document.getElementById('currentProvince').value;
+  const currentCity=document.getElementById('currentCity').value;
+  const occupation=document.getElementById('occupation').value;
+  const birthMonth=document.getElementById('birthMonth').value;
+  const birthDay=document.getElementById('birthDay').value;
+  const birthHour=document.getElementById('birthHour').value;
+  const calendarType=document.getElementById('calSolar').classList.contains('active')?'solar':'lunar';
+  if(!birthYear||!birthProvince||!currentProvince){alert('请填写出生年份、出生省份和现居省份');return}
+  const input={birthYear,birthMonth:birthMonth?parseInt(birthMonth):null,birthDay:birthDay?parseInt(birthDay):null,birthHour:birthHour||null,birthProvince,birthCity,gender,currentAge,currentProvince,currentCity,occupation,calendarType};
+  const result=calcZangEnergy(input);result.input=input;
+  // 收集体质问卷答案
+  const answers=collectQuestionAnswers();
+  if(Object.keys(answers).length>0){
+    result.constitutionResult=calcConstitutionScore(answers);
+  }
+  // 复合证型推断
+  result.syndromePatterns=calcSyndromePatterns(result.energy,result.constitutionResult);
+  document.getElementById('inputCard').style.display='none';
+  document.getElementById('resultArea').innerHTML=renderResult(result);
+  document.getElementById('nav').classList.add('show');
+  // 渲染雷达图
+  setTimeout(()=>{
+    const zangs=['肝','心','脾','肺','肾'];
+    const congenitalData=zangs.map(z=>result.congenital[z]);
+    const currentData=zangs.map(z=>result.energy[z]);
+    const radarOption={
+      tooltip:{},
+      radar:{indicator:zangs.map(z=>({name:z,max:3,min:-3})),shape:'polygon',startAngle:90,splitNumber:6,
+        axisName:{color:'#374151',fontSize:12,fontWeight:500},
+        splitArea:{areaStyle:{color:['#fafaf9','#f5f5f4','#e7e5e4','#d6d3d1','#e7e5e4','#f5f5f4']}}},
+      series:[{type:'radar',data:[{value:congenitalData,name:'先天能量',areaStyle:{color:'rgba(109,40,217,0.2)'},lineStyle:{color:'#6d28d9',width:2},itemStyle:{color:'#6d28d9'}}]}]
+    };
+    const c1=echarts.init(document.getElementById('radarCongenital'));c1.setOption(radarOption);
+    const c2=echarts.init(document.getElementById('radarCurrent'));
+    c2.setOption({...radarOption,series:[{type:'radar',data:[{value:currentData,name:'当前能量',areaStyle:{color:'rgba(194,65,12,0.2)'},lineStyle:{color:'#c2410c',width:2},itemStyle:{color:'#c2410c'}}]}]});
+    window.addEventListener('resize',()=>{c1.resize();c2.resize()});
+  },100);
+  // 导航滚动监听
+  setupNav();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function setupNav(){
+  const navItems=document.querySelectorAll('.nav-item');
+  navItems.forEach(item=>{
+    item.addEventListener('click',()=>{
+      const target=document.getElementById(item.dataset.target);
+      if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
+    });
+  });
+  const modules=document.querySelectorAll('.module');
+  const observer=new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        navItems.forEach(n=>n.classList.remove('active'));
+        const active=document.querySelector(`.nav-item[data-target="${entry.target.id}"]`);
+        if(active)active.classList.add('active');
+      }
+    });
+  },{rootMargin:'-120px 0px -60% 0px'});
+  modules.forEach(m=>observer.observe(m));
+}
+
+// 两步流程控制
+function goToStep2(){
+  const birthYear=parseInt(document.getElementById('birthYear').value);
+  const birthProvince=document.getElementById('birthProvince').value;
+  const currentProvince=document.getElementById('currentProvince').value;
+  if(!birthYear||!birthProvince||!currentProvince){alert('请填写出生年份、出生省份和现居省份');return}
+  // 先做初步推演，用于智能推荐问卷题目
+  const gender=document.getElementById('gender').value;
+  const currentAge=parseInt(document.getElementById('currentAge').value)||(2026-birthYear);
+  const birthCity=document.getElementById('birthCity').value;
+  const currentCity=document.getElementById('currentCity').value;
+  const occupation=document.getElementById('occupation').value;
+  const birthMonth=document.getElementById('birthMonth').value;
+  const birthDay=document.getElementById('birthDay').value;
+  const birthHour=document.getElementById('birthHour').value;
+  const calendarType=document.getElementById('calSolar').classList.contains('active')?'solar':'lunar';
+  const input={birthYear,birthMonth:birthMonth?parseInt(birthMonth):null,birthDay:birthDay?parseInt(birthDay):null,birthHour:birthHour||null,birthProvince,birthCity,gender,currentAge,currentProvince,currentCity,occupation,calendarType};
+  const prelimResult=calcZangEnergy(input);
+  // 生成动态问卷
+  generateQuestions(prelimResult.energy);
+  // 切换到第二步
+  document.getElementById('step1').style.display='none';
+  document.getElementById('step2').style.display='block';
+  document.getElementById('stepInd1').classList.remove('active');
+  document.getElementById('stepInd2').classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  // 启动问卷自动填写动画（确保能量数据存在）
+  var energyData = prelimResult && prelimResult.energy ? prelimResult.energy : {肝:0,心:0,脾:0,肺:0,肾:0};
+  console.log('goToStep2: 启动自动填写，能量数据=', energyData);
+  setTimeout(function(){autoFillQuestions(energyData)}, 600);
+}
+
+function goToStep1(){
+  document.getElementById('step2').style.display='none';
+  document.getElementById('step1').style.display='block';
+  document.getElementById('stepInd2').classList.remove('active');
+  document.getElementById('stepInd1').classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function skipQuestionnaire(){
+  calculate();
+}
+
+// 阳历农历切换
+function switchCalendar(type){
+  const solarBtn=document.getElementById('calSolar');
+  const lunarBtn=document.getElementById('calLunar');
+  if(type==='solar'){
+    solarBtn.classList.add('active');
+    lunarBtn.classList.remove('active');
+  }else{
+    lunarBtn.classList.add('active');
+    solarBtn.classList.remove('active');
+  }
+  updateMonthDayOptions();
+}
+
+function updateMonthDayOptions(){
+  const isLunar=document.getElementById('calLunar').classList.contains('active');
+  const monthSelect=document.getElementById('birthMonth');
+  const daySelect=document.getElementById('birthDay');
+  const currentMonth=monthSelect.value;
+  const currentDay=daySelect.value;
+  // 更新月份选项
+  monthSelect.innerHTML='<option value="">不填</option>';
+  for(let i=1;i<=12;i++){
+    const monthName=isLunar?['正','二','三','四','五','六','七','八','九','十','冬','腊'][i-1]+'月':i+'月';
+    const opt=document.createElement('option');
+    opt.value=i;opt.textContent=monthName;
+    monthSelect.appendChild(opt);
+  }
+  if(currentMonth)monthSelect.value=currentMonth;
+  // 更新日期选项
+  updateDayOptions();
+}
+
+function updateDayOptions(){
+  const isLunar=document.getElementById('calLunar').classList.contains('active');
+  const month=parseInt(document.getElementById('birthMonth').value);
+  const year=parseInt(document.getElementById('birthYear').value);
+  const daySelect=document.getElementById('birthDay');
+  const currentDay=daySelect.value;
+  daySelect.innerHTML='<option value="">不填</option>';
+  let maxDay=30;
+  if(month&&year){
+    if(isLunar){
+      maxDay=(LUNAR_INFO[year-1900]&(0x10000>>month))?30:29;
+    }else{
+      maxDay=new Date(year,month,0).getDate();
+    }
+  }
+  for(let i=1;i<=maxDay;i++){
+    const dayName=isLunar?(i<=10?'初'+['一','二','三','四','五','六','七','八','九','十'][i-1]:i<=20?'十'+['一','二','三','四','五','六','七','八','九','十'][i-11]:i===21?'廿一':i===30?'三十':'廿'+['一','二','三','四','五','六','七','八','九'][i-21]):i+'日';
+    const opt=document.createElement('option');
+    opt.value=i;opt.textContent=dayName;
+    daySelect.appendChild(opt);
+  }
+  if(currentDay&&parseInt(currentDay)<=maxDay)daySelect.value=currentDay;
+}
+
+// 动态问卷生成
+function generateQuestions(energy){
+  const zangs=['肝','心','脾','肺','肾'];
+  const weakZangs=zangs.filter(z=>energy[z]<=-1).sort((a,b)=>energy[a]-energy[b]);
+  const strongZangs=zangs.filter(z=>energy[z]>=1).sort((a,b)=>energy[b]-energy[a]);
+  // 根据五脏能量推荐体质类型
+  const recommendedTypes=new Set();
+  if(energy.脾<=-1||energy.肺<=-1)recommendedTypes.add('气虚质');
+  if(energy.肾<=-1&&energy.心<=0)recommendedTypes.add('阳虚质');
+  if(energy.肾<=-2&&energy.心>=1)recommendedTypes.add('阴虚质');
+  if(energy.脾<=-1&&energy.肺<=-1)recommendedTypes.add('痰湿质');
+  if(energy.脾>=1&&energy.肝>=1)recommendedTypes.add('湿热质');
+  if(energy.心<=-1||energy.肝>=1)recommendedTypes.add('血瘀质');
+  if(energy.肝<=-1||energy.肝>=2)recommendedTypes.add('气郁质');
+  if(energy.肺<=-2||energy.肾<=-2)recommendedTypes.add('特禀质');
+  recommendedTypes.add('平和质');
+  // 生成推荐题目（每种推荐体质取前5题，最多约10题）
+  const recommendedQuestions=[];
+  const otherQuestions=[];
+  let recCount=0;
+  Object.keys(CONSTITUTION_QUESTIONS).forEach(type=>{
+    const questions=CONSTITUTION_QUESTIONS[type];
+    questions.forEach((q,idx)=>{
+      const item={type,idx,text:q.q,key:type+'_'+idx};
+      if(recommendedTypes.has(type)&&recCount<12){
+        recommendedQuestions.push(item);recCount++;
+      }else{
+        otherQuestions.push(item);
+      }
+    });
+  });
+  // 渲染推荐题目
+  const recContainer=document.getElementById('recommendedQuestions');
+  let recHtml='';
+  // 按体质分组
+  const grouped={};
+  recommendedQuestions.forEach(q=>{
+    if(!grouped[q.type])grouped[q.type]=[];
+    grouped[q.type].push(q);
+  });
+  Object.keys(grouped).forEach(type=>{
+    recHtml+=`<div class="question-group"><div class="question-group-title">📋 ${type}相关问题 <span class="badge badge-blue">${grouped[type].length}题</span></div>`;
+    grouped[type].forEach(q=>{
+      recHtml+=`<div class="question-item"><div class="question-text">${q.text}</div><div class="question-options">`;
+      QUESTION_OPTIONS.forEach(opt=>{
+        const checkedAttr = opt.score===3 ? ' checked' : '';
+        recHtml+=`<label><input type="radio" name="${q.key}" value="${opt.score}"${checkedAttr}><span>${opt.label}</span></label>`;
+      });
+      recHtml+=`</div></div>`;
+    });
+    recHtml+=`</div>`;
+  });
+  recContainer.innerHTML=recHtml;
+  // 渲染其他题目
+  const otherContainer=document.getElementById('otherQuestions');
+  document.getElementById('otherCount').textContent=otherQuestions.length;
+  let otherHtml='';
+  const otherGrouped={};
+  otherQuestions.forEach(q=>{
+    if(!otherGrouped[q.type])otherGrouped[q.type]=[];
+    otherGrouped[q.type].push(q);
+  });
+  Object.keys(otherGrouped).forEach(type=>{
+    otherHtml+=`<div class="question-group"><div class="question-group-title">${type} <span class="badge badge-secondary">${otherGrouped[type].length}题</span></div>`;
+    otherGrouped[type].forEach(q=>{
+      otherHtml+=`<div class="question-item"><div class="question-text">${q.text}</div><div class="question-options">`;
+      QUESTION_OPTIONS.forEach(opt=>{
+        const checkedAttr = opt.score===3 ? ' checked' : '';
+        otherHtml+=`<label><input type="radio" name="${q.key}" value="${opt.score}"${checkedAttr}><span>${opt.label}</span></label>`;
+      });
+      otherHtml+=`</div></div>`;
+    });
+    otherHtml+=`</div>`;
+  });
+  otherContainer.innerHTML=otherHtml;
+}
+
+// 收集问卷答案
+function collectQuestionAnswers(){
+  const answers={};
+  document.querySelectorAll('#step2 input[type="radio"]:checked').forEach(input=>{
+    answers[input.name]=input.value;
+  });
+  return answers;
+}
+
+// 问卷自动填写动画
+function autoFillQuestions(energy){
+  var allQuestions=document.querySelectorAll('#step2 .question-item');
+  if(allQuestions.length===0){
+    console.log('autoFillQuestions: 未找到问卷题目');
+    return;
+  }
+  
+  // 创建进度条和提示（直接在step2开头插入）
+  var step2=document.getElementById('step2');
+  if(!document.getElementById('autoFillProgress')){
+    var progress=document.createElement('div');
+    progress.id='autoFillProgress';
+    progress.className='auto-fill-progress';
+    progress.style.width='0%';
+    step2.insertBefore(progress, step2.firstChild);
+    
+    var tip=document.createElement('div');
+    tip.id='autoFillTip';
+    tip.className='auto-fill-tip';
+    tip.innerHTML='🤖 正在根据您的先天禀赋自动预填问卷...';
+    step2.insertBefore(tip, progress.nextSibling);
+  }
+  
+  var progress=document.getElementById('autoFillProgress');
+  var tip=document.getElementById('autoFillTip');
+  
+  // 自动展开折叠区，确保所有题目都可见
+  var otherSection=document.getElementById('otherQuestions');
+  if(otherSection){
+    otherSection.style.display='block';
+    var details=otherSection.querySelector('details');
+    if(details)details.open=true;
+  }
+  
+  // 根据五脏能量计算每题的推荐分数
+  function getRecommendedScore(type,idx,question){
+    var zangMap={'气虚质':['脾','肺'],'阳虚质':['肾','脾'],'阴虚质':['肾','肝'],'痰湿质':['脾','肺'],'湿热质':['脾','肝'],'血瘀质':['心','肝'],'气郁质':['肝','心'],'特禀质':['肺','肾'],'平和质':['肝','心','脾','肺','肾']};
+    var zangs=zangMap[type]||['脾'];
+    
+    if(type==='平和质'){
+      var avgEnergy=zangs.reduce(function(s,z){return s+Math.abs(energy[z]||0)},0)/zangs.length;
+      if(question&&question.reverse){
+        // 反向题（症状题）：越平和分数越低
+        if(avgEnergy<=0.3)return 1;  // 非常平和 → 没有
+        if(avgEnergy<=0.6)return 2;  // 比较平和 → 很少
+        return 3;  // 一般 → 有时
+      }else{
+        // 正向题（精力题）：越平和分数越高
+        if(avgEnergy<=0.3)return 5;  // 非常平和 → 总是
+        if(avgEnergy<=0.6)return 4;  // 比较平和 → 经常
+        return 3;  // 一般 → 有时
+      }
+    }
+    
+    var maxAbs=0;
+    zangs.forEach(function(z){maxAbs=Math.max(maxAbs,Math.abs(energy[z]||0))});
+    
+    if(maxAbs>=2)return 4;  // 能量明显异常 → 经常
+    if(maxAbs>=1)return 3;  // 能量轻度异常 → 有时（默认）
+    if(maxAbs===0)return 2;  // 能量平和 → 很少
+    return 3;  // 默认 → 有时
+  }
+  
+  // 逐个题目自动填写，带动画
+  var currentIndex=0;
+  var totalQuestions=allQuestions.length;
+  
+  function fillNext(){
+    if(currentIndex>=totalQuestions){
+      if(progress)progress.style.width='100%';
+      if(tip){
+        tip.innerHTML='✅ 已根据您的先天禀赋自动预填问卷（默认"有时"，部分题目根据推断调整），您可根据实际情况手动调整';
+        tip.classList.add('show');
+        setTimeout(function(){if(progress)progress.style.display='none'},1000);
+      }
+      return;
+    }
+    
+    var item=allQuestions[currentIndex];
+    var radioInputs=item.querySelectorAll('input[type="radio"]');
+    
+    if(radioInputs.length>0){
+      var name=radioInputs[0].name;
+      var match=name.match(/^(.+)_(\d+)$/);
+      var type='',idx=0;
+      if(match){type=match[1];idx=parseInt(match[2])}
+      
+      var question=CONSTITUTION_QUESTIONS[type]?CONSTITUTION_QUESTIONS[type][idx]:null;
+      var score=getRecommendedScore(type,idx,question);
+      
+      item.classList.add('auto-filling');
+      
+      var targetInput=item.querySelector('input[value="'+score+'"]');
+      if(targetInput){
+        targetInput.checked=true;
+        var label=targetInput.closest('label');
+        if(label)label.classList.add('auto-selected');
+      }
+      
+      if(progress){
+        var pct=((currentIndex+1)/totalQuestions)*100;
+        progress.style.width=pct+'%';
+      }
+      
+      setTimeout(function(){
+        item.classList.remove('auto-filling');
+        currentIndex++;
+        setTimeout(fillNext,30);
+      },80);
+    }else{
+      currentIndex++;
+      fillNext();
+    }
+  }
+  
+  fillNext();
+}
+
+function loadExample(){
+  document.getElementById('birthYear').value=1995;
+  document.getElementById('birthProvince').value='河北省';
+  updateCities('birthProvince','birthCity');
+  document.getElementById('birthCity').value='石家庄市';
+  document.getElementById('gender').value='male';
+  document.getElementById('currentAge').value=2026-1995;
+  document.getElementById('currentProvince').value='河北省';
+  updateCities('currentProvince','currentCity');
+  document.getElementById('currentCity').value='石家庄市';
+  document.getElementById('occupation').value='it';
+  // 示例：填写月日时辰以演示五运六气精细化
+  updateMonthDayOptions();
+  document.getElementById('birthMonth').value=6;
+  updateDayOptions();
+  document.getElementById('birthDay').value=15;
+  document.getElementById('birthHour').value='午';
+}
+
+function updateCities(provinceId,cityId){
+  const province=document.getElementById(provinceId).value;
+  const citySelect=document.getElementById(cityId);
+  citySelect.innerHTML='<option value="">请选择</option>';
+  if(PROVINCES[province]){PROVINCES[province].cities.forEach(c=>{const opt=document.createElement('option');opt.value=c;opt.textContent=c;citySelect.appendChild(opt)})}
+}
+
+// 初始化
+function init(){
+  ['birthProvince','currentProvince'].forEach(id=>{
+    const sel=document.getElementById(id);
+    Object.keys(PROVINCES).forEach(p=>{const opt=document.createElement('option');opt.value=p;opt.textContent=p;sel.appendChild(opt)});
+  });
+  document.getElementById('birthProvince').addEventListener('change',()=>updateCities('birthProvince','birthCity'));
+  document.getElementById('currentProvince').addEventListener('change',()=>updateCities('currentProvince','currentCity'));
+  document.getElementById('birthYear').addEventListener('change',function(){const y=parseInt(this.value);if(y&&y>=1900&&y<=2026){document.getElementById('currentAge').value=2026-y;updateDayOptions()}});
+  document.getElementById('birthMonth').addEventListener('change',updateDayOptions);
+  // 初始化月份日期选项
+  updateMonthDayOptions();
+}
+init();
+</script>
+</body>
+</html>
