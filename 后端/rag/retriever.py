@@ -12,13 +12,22 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 # 全局变量，懒加载向量库
 _vectorstore = None
 
+# 向量库路径：基于当前文件位置的绝对路径（后端/chroma_db）
+DEFAULT_DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'chroma_db')
 
-def get_vectorstore(persist_directory: str = "./chroma_db"):
+
+def get_vectorstore(persist_directory: str = None):
     """
     获取向量库实例（懒加载，只初始化一次）
     """
     global _vectorstore
     if _vectorstore is None:
+        if persist_directory is None:
+            persist_directory = DEFAULT_DB_PATH
+
+        print(f"[retriever] 正在加载向量库：{persist_directory}")
+        print(f"[retriever] 路径是否存在：{os.path.exists(persist_directory)}")
+
         if not os.path.exists(persist_directory):
             raise FileNotFoundError(
                 f"向量库不存在：{persist_directory}。请先运行 build_knowledge_base.py 构建知识库。"
@@ -33,6 +42,7 @@ def get_vectorstore(persist_directory: str = "./chroma_db"):
             persist_directory=persist_directory,
             embedding_function=embeddings
         )
+        print(f"[retriever] 向量库加载完成")
     return _vectorstore
 
 
