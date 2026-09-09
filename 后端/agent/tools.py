@@ -8,27 +8,78 @@ from langchain_core.tools import tool
 
 
 @tool
-def calculate_wuyun_liuqi(birth_year: int, birth_month: int = None,
-                           birth_day: int = None, birth_hour: str = None) -> dict:
+def calculate_wuyun_liuqi(
+    birth_year: int,
+    birth_province: str = "北京市",
+    current_province: str = "北京市",
+    occupation: str = None,
+    gender: str = "male",
+    current_age: int = 30,
+    birth_month: int = None,
+    birth_day: int = None,
+    birth_hour: str = None
+) -> dict:
     """
-    根据出生日期计算五运六气和五脏能量。
+    根据出生信息计算五运六气和五脏能量格局。
+    这是中医体质推演的核心工具，能算出先天禀赋和后天受影响后的五脏能量。
 
     Args:
-        birth_year: 出生年份（必填）
-        birth_month: 出生月份（选填）
-        birth_day: 出生日期（选填）
-        birth_hour: 出生时辰（选填，如"午"）
+        birth_year: 出生年份（必填），如1995
+        birth_province: 出生省份（选填），如"河北省"、"广东省"
+        current_province: 现居省份（选填），如"北京市"、"上海市"
+        occupation: 职业类型（选填），可选值：it/design/finance/education/medical/sales/manager/manufacture/service/student/freelance/retired
+        gender: 性别（选填），"male"或"female"，默认"male"
+        current_age: 当前年龄（选填），默认30
+        birth_month: 出生月份（选填，1-12），填写后启用五运六气精细化计算
+        birth_day: 出生日期（选填，1-31），填写后启用精细化计算
+        birth_hour: 出生时辰（选填），如"子"、"丑"、"寅"、"卯"、"辰"、"巳"、"午"、"未"、"申"、"酉"、"戌"、"亥"
 
     Returns:
-        包含五运六气详情和五脏能量的字典
+        包含五运六气详情和五脏能量的字典，包括：
+        - ganzhi: 天干地支
+        - zhongyun: 中运（大运）
+        - sitian: 司天在泉
+        - congenital_energy: 先天能量（出生时的五脏能量）
+        - current_energy: 当前能量（受后天环境、职业、年龄影响后）
+        - constitution: 体质类型判断
+        - details: 每个脏器的影响因素详情
+        - detailed_luck_qi: 五运六气精细化计算结果（填写了月日时才有）
     """
-    # TODO: 把前端HTML里的计算逻辑移植到这里
-    # 现在先返回占位数据
+    from agent.wuyun_liuqi import calc_zang_energy, judge_constitution
+
+    input_data = {
+        'birth_year': birth_year,
+        'birth_province': birth_province,
+        'current_province': current_province,
+        'occupation': occupation,
+        'gender': gender,
+        'current_age': current_age
+    }
+
+    # 如果填写了月日，加入精细化计算
+    if birth_month and birth_day:
+        input_data['birth_month'] = birth_month
+        input_data['birth_day'] = birth_day
+        if birth_hour:
+            input_data['birth_hour'] = birth_hour
+
+    # 执行计算
+    result = calc_zang_energy(input_data)
+    constitution = judge_constitution(result['energy'])
+
+    # 整理返回结果
     return {
-        "energy": {"肝": 1, "心": 0, "脾": -1, "肺": 0, "肾": -2},
-        "wuyun": "土运",
-        "liuqi": "少阴君火司天",
-        "note": "这是占位数据，后续需要移植完整的五运六气计算逻辑"
+        'ganzhi': f"{result['ganzhi']['gan']}{result['ganzhi']['zhi']}",
+        'zhongyun': result['zhongyun']['desc'],
+        'sitian': result['sitian']['desc'],
+        'congenital_energy': result['congenital'],
+        'current_energy': result['energy'],
+        'constitution': {
+            'name': constitution['name'],
+            'desc': constitution['desc']
+        },
+        'details': result['details'],
+        'detailed_luck_qi': result['detailed_luck_qi']
     }
 
 
